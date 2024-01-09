@@ -1,0 +1,22 @@
+name: Build csmctl binary
+# yamllint disable rule:line-length
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+
+jobs:
+  manager-image:
+    name: Build and push manager image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-go
+
+      # Load Golang cache build from GitHub
+      - name: build go binary
+        run: |
+          go build -o csmctl main.go
