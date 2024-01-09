@@ -17,7 +17,7 @@ limitations under the License.
 // Package main is the entrypoint for csmctl.
 package main
 
-import "github.com/SovereignCloudStack/csmctl/cmd"
+import "github.com/SovereignCloudStack/csmctl/pkg/cmd"
 
 func main() {
 	cmd.Execute()
