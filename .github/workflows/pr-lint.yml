@@ -1,0 +1,52 @@
+name: "Lint Pull Request"
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+    paths:
+      - "**.go"
+      - "**go.mod"
+      - "**go.sum"
+      - "<templates|test>/**/*.<yml|yaml>"
+      - ".github/actions/**/*"
+      - ".github/workflows/e2e-*"
+      - ".github/workflows/pr-*"
+      - "!**/vendor/**"
+# yamllint disable rule:line-length
+jobs:
+  pr-lint:
+    name: "Lint Pull Request"
+    if: github.event_name != 'pull_request_target' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sovereigncloudstack/csmctl-builder:0.2.0
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fixup git permissions
+        # https://github.com/actions/checkout/issues/766
+        shell: bash
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Verify Golang Modules
+        run: make BUILD_IN_CONTAINER=false generate-modules-ci
+
+      - name: Lint Golang Code
+        run: make BUILD_IN_CONTAINER=false lint-golang-ci
+
+      - name: Link Checker
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: make BUILD_IN_CONTAINER=false lint-links
+
+      - name: Lint YAML
+        run: make BUILD_IN_CONTAINER=false lint-yaml-ci
+
+      - name: Lint Dockerfile
+        run: make BUILD_IN_CONTAINER=false lint-dockerfile

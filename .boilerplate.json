@@ -1,0 +1,12 @@
+{
+  "dirs_to_skip" : [
+    "hack/boilerplate/testdata/",
+    "hack/tools/",
+    "vendor",
+    ".cache",
+    ".pkg"
+  ],
+  "not_generated_files_to_skip" : [
+    "hack/boilerplate/boilerplate.py"
+  ]
+}
