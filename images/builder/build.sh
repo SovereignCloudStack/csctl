@@ -16,7 +16,7 @@
 
 set -eu
 
-SRC_PATH=/src/scs-csmctl
+SRC_PATH=/src
 
 uid=$(stat --format="%u" "${SRC_PATH}")
 gid=$(stat --format="%g" "${SRC_PATH}")
