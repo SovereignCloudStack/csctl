@@ -17,3 +17,5 @@ temp
 # build and release
 dist
 csmctl
+tmp/
+releases/
