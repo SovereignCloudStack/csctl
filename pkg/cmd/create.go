@@ -27,6 +27,7 @@ import (
 	"github.com/SovereignCloudStack/csmctl/pkg/git"
 	"github.com/SovereignCloudStack/csmctl/pkg/github"
 	"github.com/SovereignCloudStack/csmctl/pkg/hash"
+	"github.com/SovereignCloudStack/csmctl/pkg/providerplugin"
 	"github.com/SovereignCloudStack/csmctl/pkg/template"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -64,7 +65,8 @@ the cluster stack release in the current directory named "release/".
 Supported modes are - stable, alpha, beta, hash
 
 note - Hash mode takes the last hash of the git commit.`,
-	RunE: createAction,
+	RunE:         createAction,
+	SilenceUsage: true,
 }
 
 func init() {
@@ -84,6 +86,11 @@ func createAction(_ *cobra.Command, args []string) error {
 	config, err := csmctlclusterstack.GetCsmctlConfig(clusterStackPath)
 	if err != nil {
 		return fmt.Errorf("failed to get config: %w", err)
+	}
+
+	_, err = providerplugin.CheckProviderExecutable(config)
+	if err != nil {
+		return err
 	}
 
 	// Skip downloading github release for the hash mode.
@@ -109,7 +116,7 @@ func createAction(_ *cobra.Command, args []string) error {
 			clusterStackReleaseDir: csrDirName,
 			currentHash:            currentHash,
 		}
-		if err := create.buildPackerAndGenerateRelease(); err != nil {
+		if err := create.buildNodeImagesAndGenerateRelease(); err != nil {
 			return fmt.Errorf("failed to build packer and generate release: %w", err)
 		}
 		return nil
@@ -150,7 +157,7 @@ func createAction(_ *cobra.Command, args []string) error {
 		clusterStackReleaseDir: csrDirName,
 		currentHash:            currentHash,
 	}
-	if err := create.buildPackerAndGenerateRelease(); err != nil {
+	if err := create.buildNodeImagesAndGenerateRelease(); err != nil {
 		return fmt.Errorf("failed to build packer and generate release: %w", err)
 	}
 
@@ -255,10 +262,10 @@ func handleHashMode(metadata *csmctlclusterstack.MetaData) (*csmctlclusterstack.
 	return metadata, nil
 }
 
-func (c *CreateOptions) buildPackerAndGenerateRelease() error {
+func (c *CreateOptions) buildNodeImagesAndGenerateRelease() error {
 	// Release directory name
 	releaseDirectory := filepath.Join(outputDirectory, c.clusterStackReleaseDir)
-
+	fmt.Printf("Creating output in %s\n", releaseDirectory)
 	// Write the current hash
 	hashJSONData, err := json.MarshalIndent(c.currentHash, "", "  ")
 	if err != nil {
@@ -287,5 +294,5 @@ func (c *CreateOptions) buildPackerAndGenerateRelease() error {
 		return fmt.Errorf("failed to create package: %w", err)
 	}
 
-	return nil
+	return providerplugin.CreateNodeImages(c.config, c.clusterStackPath, releaseDirectory)
 }

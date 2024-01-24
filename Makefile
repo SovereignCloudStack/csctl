@@ -46,6 +46,7 @@ export GOBIN := $(abspath $(TOOLS_BIN_DIR))
 .PHONY: build
 build: # build the csmctl binary
 	go build -o csmctl main.go
+	go build -o csmctl-docker csmctldocker/csmctldocker_main.go
 
 .PHONY: lint-golang
 lint-golang: ## Lint Golang codebase

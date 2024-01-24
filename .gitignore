@@ -17,5 +17,6 @@ temp
 # build and release
 dist
 csmctl
+csmctl-docker
 tmp/
 releases/
