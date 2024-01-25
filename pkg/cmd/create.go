@@ -88,7 +88,7 @@ func createAction(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
 
-	_, err = providerplugin.GetProviderExecutable(config)
+	_, _, err = providerplugin.GetProviderExecutable(config)
 	if err != nil {
 		return err
 	}

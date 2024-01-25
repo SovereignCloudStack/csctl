@@ -27,28 +27,36 @@ import (
 )
 
 // GetProviderExecutable returns the path to the provider plugin (like "csmctl-docker").
-func GetProviderExecutable(config *clusterstack.CsmctlConfig) (path string, err error) {
+// If there is not "config" for the provider in csmctl.yaml, then needed is false and path is the empty string.
+func GetProviderExecutable(config *clusterstack.CsmctlConfig) (needed bool, path string, err error) {
+	if len(config.Config.Provider.Config) == 0 {
+		return false, "", nil
+	}
 	pluginName := "csmctl-" + config.Config.Provider.Type
 	_, err = os.Stat(pluginName)
 	if err == nil {
 		path, err := filepath.Abs(pluginName)
 		if err != nil {
-			return "", err
+			return false, "", err
 		}
-		return path, err
+		return true, path, nil
 	}
 	path, err = exec.LookPath(pluginName)
 	if err != nil {
-		return "", fmt.Errorf("could not find plugin %s in $PATH or current working directory", pluginName)
+		return false, "", fmt.Errorf("could not find plugin %s in $PATH or current working directory", pluginName)
 	}
-	return path, nil
+	return true, path, nil
 }
 
 // CreateNodeImages calls the provider plugin command to create nodes images.
 func CreateNodeImages(config *clusterstack.CsmctlConfig, clusterStackPath, clusterStackReleaseDir string) error {
-	path, err := GetProviderExecutable(config)
+	needed, path, err := GetProviderExecutable(config)
 	if err != nil {
 		return err
+	}
+	if !needed {
+		fmt.Printf("No provider specifig configuration in csmctl.yaml. No need to call a plugin for provider %q\n", config.Config.Provider.Type)
+		return nil
 	}
 	args := []string{"create-node-images", clusterStackPath, clusterStackReleaseDir}
 	fmt.Printf("Calling Provider Plugin: %s\n", path)

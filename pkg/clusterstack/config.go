@@ -36,9 +36,9 @@ type CsmctlConfig struct {
 		KubernetesVersion string `yaml:"kubernetesVersion"`
 		ClusterStackName  string `yaml:"clusterStackName"`
 		Provider          struct {
-			Type       string   `yaml:"type"`
-			APIVersion string   `yaml:"apiVersion"`
-			Config     struct{} `yaml:"config"`
+			Type       string                 `yaml:"type"`
+			APIVersion string                 `yaml:"apiVersion"`
+			Config     map[string]interface{} `yaml:"config"`
 		} `yaml:"provider"`
 	} `yaml:"config"`
 }
