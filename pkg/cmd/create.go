@@ -17,6 +17,7 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/SovereignCloudStack/csctl/pkg/clusterstack"
 	"github.com/SovereignCloudStack/csctl/pkg/github"
+	"github.com/SovereignCloudStack/csctl/pkg/github/client"
 	"github.com/SovereignCloudStack/csctl/pkg/hash"
 	"github.com/SovereignCloudStack/csctl/pkg/template"
 	"github.com/spf13/cobra"
@@ -50,8 +52,6 @@ var (
 var (
 	mode            string
 	outputDirectory string
-	// TODO: remove this later.
-	githubReleasePath string
 )
 
 // CreateOptions contains config for creating a release.
@@ -77,12 +77,10 @@ var createCmd = &cobra.Command{
 func init() {
 	createCmd.Flags().StringVarP(&mode, "mode", "m", "stable", "It defines the mode of the cluster stack manager")
 	createCmd.Flags().StringVarP(&outputDirectory, "output", "o", "./releases", "It defines the output directory in which the release artifacts will be generated")
-	// TODO: remove this later
-	createCmd.Flags().StringVar(&githubReleasePath, "github-release", "github-release", "It is used to get the path to local github release (for stable mode only)")
 }
 
 // GetCreateOptions create a Create Option for create command.
-func GetCreateOptions(clusterStackPath string) (*CreateOptions, error) {
+func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOptions, error) {
 	createOption := &CreateOptions{}
 
 	// ClusterAddon config
@@ -106,20 +104,35 @@ func GetCreateOptions(clusterStackPath string) (*CreateOptions, error) {
 			return nil, fmt.Errorf("failed to handle hash mode: %w", err)
 		}
 	case stableMode:
-		createOption.Metadata, err = clusterstack.HandleStableMode(githubReleasePath, createOption.CurrentReleaseHash, createOption.LatestReleaseHash)
+		gc, err := client.NewFactory().NewClient(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to handle stable mode: %w", err)
+			return nil, fmt.Errorf("failed to create new github client: %w", err)
 		}
 
 		// update the metadata kubernetes version with the csmctl.yaml config
 		createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 
-		// TODO: remove
-		latestReleaseInfoWithHash, err := github.GetLocalReleaseInfoWithHash(githubReleasePath)
+		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, &config, gc)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get latest github local release: %w", err)
+			return nil, fmt.Errorf("failed to get latest release form remote repository: %w", err)
 		}
-		createOption.LatestReleaseHash = latestReleaseInfoWithHash.Hash
+		fmt.Printf("latest release found: %q\n", latestRepoRelease)
+
+		if latestRepoRelease == "" {
+			createOption.Metadata.APIVersion = "metadata.clusterstack.x-k8s.io/v1alpha1"
+			createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
+			createOption.Metadata.Versions.ClusterStack = "v1"
+			createOption.Metadata.Versions.Components.ClusterAddon = "v1"
+		} else {
+			if err := github.DownloadReleaseAssets(ctx, latestRepoRelease, "./tmp/releases/", gc); err != nil {
+				return nil, fmt.Errorf("failed to download release asset: %w", err)
+			}
+
+			createOption.Metadata, err = clusterstack.HandleStableMode("./tmp/releases/", createOption.CurrentReleaseHash, createOption.LatestReleaseHash)
+			if err != nil {
+				return nil, fmt.Errorf("failed to handle stable mode: %w", err)
+			}
+		}
 	}
 
 	releaseDirName, err := clusterstack.GetClusterStackReleaseDirectoryName(&createOption.Metadata, &createOption.Config)
@@ -132,7 +145,7 @@ func GetCreateOptions(clusterStackPath string) (*CreateOptions, error) {
 	return createOption, nil
 }
 
-func createAction(_ *cobra.Command, args []string) error {
+func createAction(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("please provide a valid command, create only accept one argument to path to the cluster stacks")
 	}
@@ -143,7 +156,7 @@ func createAction(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("mode is not supported please choose from - stable, hash")
 	}
 
-	createOpts, err := GetCreateOptions(clusterStackPath)
+	createOpts, err := GetCreateOptions(cmd.Context(), clusterStackPath)
 	if err != nil {
 		return fmt.Errorf("failed to create create options: %w", err)
 	}

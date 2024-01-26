@@ -18,63 +18,33 @@ limitations under the License.
 package github
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
+	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 
-	"github.com/SovereignCloudStack/csctl/pkg/hash"
+	githubclient "github.com/SovereignCloudStack/csctl/pkg/github/client"
 )
 
-// GHRelease contains fields for a release.
-type GHRelease struct {
-	Provider               string
-	ClusterStackName       string
-	KubernetesVersionMajor string
-	KubernetesVersionMinor string
-	ClusterStackVersion    string
-
-	Hash hash.ReleaseHash
-}
-
-// GetLocalReleaseInfoWithHash gets the local release info.
-// TODO: Later replaced by the original github release fetching code.
-func GetLocalReleaseInfoWithHash(path string) (GHRelease, error) {
-	entries, err := os.ReadDir(path)
+// DownloadReleaseAssets downloads the specified release in the specified download path.
+func DownloadReleaseAssets(ctx context.Context, releaseTag, downloadPath string, gc githubclient.Client) error {
+	repoRelease, resp, err := gc.GetReleaseByTag(ctx, releaseTag)
 	if err != nil {
-		return GHRelease{}, fmt.Errorf("failed to read github release path: %w", err)
+		return fmt.Errorf("failed to fetch release tag %q: %w", releaseTag, err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to fetch release tag %s with status code %d", releaseTag, resp.StatusCode)
 	}
 
-	if len(entries) != 1 {
-		return GHRelease{}, fmt.Errorf("ambiguous release found")
+	assetlist := []string{"metadata.yaml", "cluster-addon-values.yaml", "cluster-addon", "cluster-class"}
+
+	if err := gc.DownloadReleaseAssets(ctx, repoRelease, downloadPath, assetlist); err != nil {
+		// if download failed for some reason, delete the release directory so that it can be retried in the next reconciliation
+		if err := os.RemoveAll(downloadPath); err != nil {
+			return fmt.Errorf("failed to remove release: %w", err)
+		}
+		return fmt.Errorf("failed to download release assets: %w", err)
 	}
 
-	splittedReleaseName := strings.Split(entries[0].Name(), "-")
-
-	if len(splittedReleaseName) != 5 {
-		return GHRelease{}, fmt.Errorf("wrong release found")
-	}
-
-	ghRelease := GHRelease{
-		Provider:               splittedReleaseName[0],
-		ClusterStackName:       splittedReleaseName[1],
-		KubernetesVersionMajor: splittedReleaseName[2],
-		KubernetesVersionMinor: splittedReleaseName[3],
-		ClusterStackVersion:    splittedReleaseName[4],
-	}
-
-	hashPath := filepath.Join(path, entries[0].Name(), "hashes.json")
-	hashFile, err := os.ReadFile(filepath.Clean(hashPath))
-	if err != nil {
-		return GHRelease{}, fmt.Errorf("failed to read hash.json: %w", err)
-	}
-
-	var data hash.ReleaseHash
-	if err := json.Unmarshal(hashFile, &data); err != nil {
-		return GHRelease{}, fmt.Errorf("failed to unmarshal release hash: %w", err)
-	}
-	ghRelease.Hash = data
-
-	return ghRelease, nil
+	return nil
 }
