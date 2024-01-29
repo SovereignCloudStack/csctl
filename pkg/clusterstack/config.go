@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/SovereignCloudStack/cluster-stack-operator/pkg/kubernetesversion"
+	"github.com/SovereignCloudStack/cluster-stack-operator/pkg/version"
 	"gopkg.in/yaml.v3"
 )
 
@@ -44,45 +45,45 @@ type CsmctlConfig struct {
 }
 
 // GetCsmctlConfig returns CsmctlConfig.
-func GetCsmctlConfig(path string) (*CsmctlConfig, error) {
+func GetCsmctlConfig(path string) (CsmctlConfig, error) {
 	configPath := filepath.Join(path, "csmctl.yaml")
 	configFileData, err := os.ReadFile(filepath.Clean(configPath))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read csmctl config: %w", err)
+		return CsmctlConfig{}, fmt.Errorf("failed to read csmctl config: %w", err)
 	}
 
-	cs := &CsmctlConfig{}
+	cs := CsmctlConfig{}
 	if err := yaml.Unmarshal(configFileData, &cs); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal csmctl yaml: %w", err)
+		return CsmctlConfig{}, fmt.Errorf("failed to unmarshal csmctl yaml: %w", err)
 	}
 
 	if cs.Config.Provider.Type == "" {
-		return nil, fmt.Errorf("provider type must not be empty")
+		return CsmctlConfig{}, fmt.Errorf("provider type must not be empty")
 	}
 
 	if len(cs.Config.Provider.Type) > 253 {
-		return nil, fmt.Errorf("provider name must not be greater than 253")
+		return CsmctlConfig{}, fmt.Errorf("provider name must not be greater than 253")
 	}
 
 	match, err := regexp.MatchString(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`, cs.Config.Provider.Type)
 	if err != nil {
-		return nil, fmt.Errorf("failed to provider name match regex: %w", err)
+		return CsmctlConfig{}, fmt.Errorf("failed to provider name match regex: %w", err)
 	}
 	if !match {
-		return nil, fmt.Errorf("invalid provider type: %q", cs.Config.Provider.Type)
+		return CsmctlConfig{}, fmt.Errorf("invalid provider type: %q", cs.Config.Provider.Type)
 	}
 
 	if cs.Config.ClusterStackName == "" {
-		return nil, fmt.Errorf("cluster stack name must not be empty")
+		return CsmctlConfig{}, fmt.Errorf("cluster stack name must not be empty")
 	}
 
 	// Validate kubernetes version
 	matched, err := regexp.MatchString(`^v\d+\.\d+\.\d+$`, cs.Config.KubernetesVersion)
 	if err != nil {
-		return nil, fmt.Errorf("failed to kubernetes match regex: %w", err)
+		return CsmctlConfig{}, fmt.Errorf("failed to kubernetes match regex: %w", err)
 	}
 	if !matched {
-		return nil, fmt.Errorf("invalid kubernetes version: %q", cs.Config.KubernetesVersion)
+		return CsmctlConfig{}, fmt.Errorf("invalid kubernetes version: %q", cs.Config.KubernetesVersion)
 	}
 
 	return cs, nil
@@ -110,4 +111,23 @@ func (c *CsmctlConfig) ParseKubernetesVersion() (kubernetesversion.KubernetesVer
 		Major: major,
 		Minor: minor,
 	}, nil
+}
+
+// GetClusterStackReleaseDirectoryName returns cluster stack release directory.
+// e.g. - docker-ferrol-1-27-v1/ .
+func GetClusterStackReleaseDirectoryName(metadata *MetaData, config *CsmctlConfig) (string, error) {
+	// Parse the cluster stack version from dot format `v1-alpha.0` to a version way of struct
+	// and parse the kubernetes version from `v1.27.3` to a major minor way
+	// and create the release directory at the end.
+	clusterStackVersion, err := version.New(metadata.Versions.ClusterStack)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse cluster stack version: %w", err)
+	}
+	kubernetesVerion, err := config.ParseKubernetesVersion()
+	if err != nil {
+		return "", fmt.Errorf("failed to parse kubernetes version: %w", err)
+	}
+	clusterStackReleaseDirName := fmt.Sprintf("%s-%s-%s-%s", config.Config.Provider.Type, config.Config.ClusterStackName, kubernetesVerion.String(), clusterStackVersion.String())
+
+	return clusterStackReleaseDirName, nil
 }

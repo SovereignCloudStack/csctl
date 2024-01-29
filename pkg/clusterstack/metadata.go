@@ -24,40 +24,46 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// MetaData contains information of the metadata.yaml.
+// Component contains component.
+type Component struct {
+	ClusterAddon string `yaml:"clusterAddon"`
+	NodeImage    string `yaml:"nodeImage"`
+}
+
+// Versions contains version information.
+type Versions struct {
+	ClusterStack string    `yaml:"clusterStack"`
+	Kubernetes   string    `yaml:"kubernetes"`
+	Components   Component `yaml:"components"`
+}
+
+// MetaData contains metadata.
 type MetaData struct {
-	APIVersion string `yaml:"apiVersion"`
-	Versions   struct {
-		ClusterStack string `yaml:"clusterStack"`
-		Kubernetes   string `yaml:"kubernetes"`
-		Components   struct {
-			ClusterAddon string `yaml:"clusterAddon"`
-			NodeImage    string `yaml:"nodeImage,omitempty"`
-		} `yaml:"components"`
-	} `yaml:"versions"`
+	APIVersion string   `yaml:"apiVersion"`
+	Versions   Versions `yaml:"versions"`
 }
 
 // ParseMetaData parse the metadata file.
-func ParseMetaData(path string) (*MetaData, error) {
+func ParseMetaData(path string) (MetaData, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read metadata directory: %w", err)
+		return MetaData{}, fmt.Errorf("failed to read metadata directory: %w", err)
 	}
 
 	if len(entries) != 1 {
-		return nil, fmt.Errorf("ambiguous release found")
+		return MetaData{}, fmt.Errorf("ambiguous release found")
 	}
 
 	metadataPath := filepath.Join(path, entries[0].Name(), "metadata.yaml")
 	fileInfo, err := os.ReadFile(filepath.Clean(metadataPath))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read metadata file: %w", err)
+		return MetaData{}, fmt.Errorf("failed to read metadata file: %w", err)
 	}
 
-	metaData := &MetaData{}
+	metaData := MetaData{}
 
 	if err := yaml.Unmarshal(fileInfo, &metaData); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal metadata yaml: %w", err)
+		return MetaData{}, fmt.Errorf("failed to unmarshal metadata yaml: %w", err)
 	}
 
 	return metaData, nil
