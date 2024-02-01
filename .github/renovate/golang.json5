@@ -22,6 +22,12 @@
       enabled: false,
     },
     {
+      description: "Disable github-go",
+      matchManagers: ["gomod"],
+      matchDepNames: ["github.com/google/go-github"],
+      enabled: false,
+    },
+    {
       description: "Disable update k8s packages",
       matchManagers: ["gomod"],
       matchDepNames: ["k8s.io/api", "k8s.io/apimachinery", "k8s.io/apiserver", "k8s.io/client-go", "k8s.io/kubectl", "k8s.io/code-generator"],
