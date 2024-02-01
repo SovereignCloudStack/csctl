@@ -26,8 +26,8 @@
     "**/test/**",
     "**/tests/**"
   ],
-  username: "csmctl-bot[bot]",
-  // TODO: gitAuthor: "csmctl-bot[bot] <-bot[bot]@users.noreply.github.com>",
+  username: "cluster-stack-bot[bot]",
+  gitAuthor: "cluster-stack-bot[bot] <143188378+cluster-stack-bot[bot]@users.noreply.github.com>",
   // PR config
   dependencyDashboardTitle: "Dependency Dashboard 🤖",
   dependencyDashboardHeader: "",
