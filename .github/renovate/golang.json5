@@ -24,7 +24,7 @@
     {
       description: "Disable github-go",
       matchManagers: ["gomod"],
-      matchDepNames: ["github.com/google/go-github"],
+      matchDepNames: ["github.com/google/go-github/v56"],
       enabled: false,
     },
     {
