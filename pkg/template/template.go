@@ -31,7 +31,7 @@ type CustomWalkFunc func(src, dst, path string, info os.FileInfo, meta *csctlclu
 
 // MyWalk is the custom walking function to walk in the cluster stacks.
 func MyWalk(src, dst string, walkFn CustomWalkFunc, meta *csctlclusterstack.MetaData) error {
-	if err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(src, func(path string, info os.FileInfo, _ error) error {
 		return walkFn(src, dst, path, info, meta)
 	}); err != nil {
 		return fmt.Errorf("failed to walk files: %w", err)

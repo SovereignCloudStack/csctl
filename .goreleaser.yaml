@@ -4,7 +4,10 @@ builds:
   - binary: csctl
     goos:
       - linux
+      - darwin
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=0
+    ldflags: -w -s -X github.com/SovereignCloudStack/csmctl/pkg/cmd.Version={{.Version}} -X github.com/SovereignCloudStack/csmctl/pkg/cmd.Commit={{.Commit}}
