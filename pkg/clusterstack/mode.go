@@ -37,7 +37,11 @@ func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleas
 		}
 		fmt.Printf("Bumped NodeImage Version: %s\n", metadata.Versions.Components.NodeImage)
 	} else {
-		fmt.Printf("NodeImage Version unchanged: %s\n", metadata.Versions.Components.NodeImage)
+		if metadata.Versions.Components.NodeImage == "" {
+			fmt.Println("No NodeImage Version.")
+		} else {
+			fmt.Printf("NodeImage Version unchanged: %s\n", metadata.Versions.Components.NodeImage)
+		}
 	}
 
 	return metadata, nil
