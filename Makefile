@@ -44,7 +44,7 @@ export GOBIN := $(abspath $(TOOLS_BIN_DIR))
 # Common #
 ##########
 .PHONY: build
-build: # build the csmctl binary
+build: ## build the csmctl binary
 	go build -o csmctl main.go
 
 .PHONY: lint-golang

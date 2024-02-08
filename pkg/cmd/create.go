@@ -153,6 +153,7 @@ func createAction(_ *cobra.Command, args []string) error {
 	if err := createOpts.generateRelease(); err != nil {
 		return fmt.Errorf("failed to generate release: %w", err)
 	}
+	fmt.Printf("Created %s\n", createOpts.ClusterStackReleaseDir)
 
 	return nil
 }

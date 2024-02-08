@@ -11,3 +11,9 @@ If you need a plugin for your provider and your Cluster Stack that automates bui
 ## Using csmctl
 
 Do you have your Cluster Stack configured already? Is your plugin ready if you need it? Then check out [how to use](how_to_use_csmctl.md) the CLI tool!
+
+## Developing and testing csmctl
+
+You want to improve or test `csmctl`?
+
+You can find the introduction in [developing and testing csmctl](./developing-and-testing-csmctl.md)
