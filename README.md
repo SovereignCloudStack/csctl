@@ -28,3 +28,7 @@ The plugin mechanism of csmctl allows providers to implement all provider-specif
 
 4. Automated testing of Cluster Stacks
 The csmctl enables automated testing of Cluster Stacks if integrated in a CI process that first builds all necessary files as well as node images (if needed) and then uses them to create a workload cluster based on the Cluster Stack.
+
+## Docs
+
+[Docs](./docs/README.md)
