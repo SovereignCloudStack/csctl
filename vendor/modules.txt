@@ -27,7 +27,7 @@ github.com/Masterminds/squirrel
 # github.com/Microsoft/hcsshim v0.11.0
 ## explicit; go 1.18
 github.com/Microsoft/hcsshim/osversion
-# github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.2.0.20240119073057-7c5bfa7d3112
+# github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.3
 ## explicit; go 1.19
 github.com/SovereignCloudStack/cluster-stack-operator/pkg/kubernetesversion
 github.com/SovereignCloudStack/cluster-stack-operator/pkg/version
