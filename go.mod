@@ -3,7 +3,7 @@ module github.com/SovereignCloudStack/csmctl
 go 1.21
 
 require (
-	github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.2.0.20240119073057-7c5bfa7d3112
+	github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.3
 	github.com/google/go-github/v56 v56.0.0
 	github.com/spf13/cobra v1.8.0
 	github.com/valyala/fasttemplate v1.2.2
