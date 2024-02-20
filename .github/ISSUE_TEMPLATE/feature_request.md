@@ -16,4 +16,4 @@ about: Suggest an idea for this project.
 
 **Environment:**
 
-- csmctl version: (use `kubectl version`)
+- csctl version: (use `csctl version`)

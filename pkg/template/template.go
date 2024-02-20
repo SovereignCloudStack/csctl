@@ -22,15 +22,15 @@ import (
 	"os"
 	"path/filepath"
 
-	csmctlclusterstack "github.com/SovereignCloudStack/csmctl/pkg/clusterstack"
+	csctlclusterstack "github.com/SovereignCloudStack/csctl/pkg/clusterstack"
 	"github.com/valyala/fasttemplate"
 )
 
 // CustomWalkFunc is the type for the walk function.
-type CustomWalkFunc func(src, dst, path string, info os.FileInfo, meta *csmctlclusterstack.MetaData) error
+type CustomWalkFunc func(src, dst, path string, info os.FileInfo, meta *csctlclusterstack.MetaData) error
 
 // MyWalk is the custom walking function to walk in the cluster stacks.
-func MyWalk(src, dst string, walkFn CustomWalkFunc, meta *csmctlclusterstack.MetaData) error {
+func MyWalk(src, dst string, walkFn CustomWalkFunc, meta *csctlclusterstack.MetaData) error {
 	if err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		return walkFn(src, dst, path, info, meta)
 	}); err != nil {
@@ -40,7 +40,7 @@ func MyWalk(src, dst string, walkFn CustomWalkFunc, meta *csmctlclusterstack.Met
 	return nil
 }
 
-func visitFile(src, dst, path string, info os.FileInfo, meta *csmctlclusterstack.MetaData) error {
+func visitFile(src, dst, path string, info os.FileInfo, meta *csctlclusterstack.MetaData) error {
 	relativePath, err := filepath.Rel(src, path)
 	if err != nil {
 		return fmt.Errorf("failed to relate directory: %w", err)
@@ -78,6 +78,6 @@ func visitFile(src, dst, path string, info os.FileInfo, meta *csmctlclusterstack
 }
 
 // GenerateOutputFromTemplate is used to generate the template with replaced values.
-func GenerateOutputFromTemplate(src, dst string, meta *csmctlclusterstack.MetaData) error {
+func GenerateOutputFromTemplate(src, dst string, meta *csctlclusterstack.MetaData) error {
 	return MyWalk(src, dst, visitFile, meta)
 }

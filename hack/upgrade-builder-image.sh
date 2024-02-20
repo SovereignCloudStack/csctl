@@ -25,7 +25,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export BUILDER_IMAGE=ghcr.io/sovereigncloudstack/csmctl-builder
+export BUILDER_IMAGE=ghcr.io/sovereigncloudstack/csctl-builder
 
 REPO_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}")/..)
 cd "${REPO_ROOT}" || exit 1
@@ -58,12 +58,12 @@ fi
 echo "$NEW_VERSION" > .builder-image-version.txt
 echo "Wrote new version $NEW_VERSION to .builder-image-version.txt"
 
-if docker manifest inspect ghcr.io/sovereigncloudstack/csmctl-builder:${NEW_VERSION} > /dev/null ; echo $?; then
+if docker manifest inspect ghcr.io/sovereigncloudstack/csctl-builder:${NEW_VERSION} > /dev/null ; echo $?; then
   
   sed -i -e "/^BUILDER_IMAGE_VERSION /s/:=.*$/:= ${NEW_VERSION}/" Makefile
-  grep -r -E 'ghcr.io/sovereigncloudstack/csmctl-builder:[0-9].*.*' -l | xargs sed -i -e "s/ghcr.io\/sovereigncloudstack\/csmctl-builder:${VERSION}/ghcr.io\/sovereigncloudstack\/csmctl-builder:${NEW_VERSION}/g"
-  docker build -t ghcr.io/sovereigncloudstack/csmctl-builder:${NEW_VERSION}  ./images/builder
-  docker push ghcr.io/sovereigncloudstack/csmctl-builder:${NEW_VERSION}
+  grep -r -E 'ghcr.io/sovereigncloudstack/csctl-builder:[0-9].*.*' -l | xargs sed -i -e "s/ghcr.io\/sovereigncloudstack\/csctl-builder:${VERSION}/ghcr.io\/sovereigncloudstack\/csctl-builder:${NEW_VERSION}/g"
+  docker build -t ghcr.io/sovereigncloudstack/csctl-builder:${NEW_VERSION}  ./images/builder
+  docker push ghcr.io/sovereigncloudstack/csctl-builder:${NEW_VERSION}
 else
   exit 1
 fi

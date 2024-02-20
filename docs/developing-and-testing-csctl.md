@@ -1,15 +1,15 @@
-# Developing and Testing csmctl
+# Developing and Testing csctl
 
 ## Clone the Repo
 
-Go to [csmctl at Github](https://github.com/SovereignCloudStack/csmctl/) and clone the repository to your local device:
+Go to [csctl at Github](https://github.com/SovereignCloudStack/csctl/) and clone the repository to your local device:
 
 ```shell
-git clone git@github.com:SovereignCloudStack/csmctl.git
+git clone git@github.com:SovereignCloudStack/csctl.git
 ```
 
 ```shell
-cd csmctl
+cd csctl
 ```
 
 ## Makefile
@@ -22,17 +22,17 @@ You can see the available build targets with `make help`.
 
 With `make build` you create the executable.
 
-## csmctl --help
+## csctl --help
 
-With `./csmctl --help` you can see the available sub-commands.
+With `./csctl --help` you can see the available sub-commands.
 
-BTW: Be sure to use `./`, so that you don't accidentally use a different `csmctl` from your `$PATH`.
+BTW: Be sure to use `./`, so that you don't accidentally use a different `csctl` from your `$PATH`.
 
 Up to now only `create` is a feasible sub-command.
 
 ## go run main.go ...     
 
-If you modify the source of `csmctl`, you can skip the build step by using `go run`:
+If you modify the source of `csctl`, you can skip the build step by using `go run`:
 
 ```shell
 go run main.go create --help

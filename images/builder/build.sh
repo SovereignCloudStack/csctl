@@ -20,8 +20,8 @@ SRC_PATH=/src
 
 uid=$(stat --format="%u" "${SRC_PATH}")
 gid=$(stat --format="%g" "${SRC_PATH}")
-echo "csmctl:x:${uid}:${gid}::${SRC_PATH}:/bin/bash" >>/etc/passwd
-echo "csmctl:*:::::::" >>/etc/shadow
-echo "csmctl	ALL=(ALL)	NOPASSWD: ALL" >>/etc/sudoers
+echo "csctl:x:${uid}:${gid}::${SRC_PATH}:/bin/bash" >>/etc/passwd
+echo "csctl:*:::::::" >>/etc/shadow
+echo "csctl	ALL=(ALL)	NOPASSWD: ALL" >>/etc/sudoers
 
-su csmctl -c "PATH=${PATH} make -C ${SRC_PATH} BUILD_IN_CONTAINER=false $*"
+su csctl -c "PATH=${PATH} make -C ${SRC_PATH} BUILD_IN_CONTAINER=false $*"

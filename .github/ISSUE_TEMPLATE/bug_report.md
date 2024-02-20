@@ -19,5 +19,5 @@ about: Tell us about a problem you are experiencing.
 
 **Environment:**
 
-- csmctl version: (use `csmctl version`)
+- csctl version: (use `csctl version`)
 - OS (e.g. from `/etc/os-release`): 
