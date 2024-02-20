@@ -1,37 +1,49 @@
 {
-  golang: {
-    postUpdateOptions: ["gomodTidy", "gomodUpdateImportPaths"],
-  },
   // https://docs.renovatebot.com/configuration-options/#constraints
-  "constraints": {
-    "go": "1.21"
-  },
-  packageRules: [
+  "constraints": {"go": "1.21"},
+  "packageRules": [
     {
-      description: "Disable Golang update for major and minor versions",
-      matchManagers: ["dockerfile"],
-      matchDepNames: ["docker.io/library/golang"],
-      matchUpdateTypes: ["major", "minor"],
-      enabled: false,
+      "matchCategories": ["golang"],
+      "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"]
     },
     {
-      description: "Disable slim-sprig",
-      matchManagers: ["gomod"],
-      matchDepNames: ["github.com/go-task/slim-sprig"],
-      matchPaths: ["hack/tools/**"],
-      enabled: false,
+      "description": "Disable Golang update for major and minor versions",
+      "matchManagers": ["dockerfile"],
+      "matchDepNames": ["docker.io/library/golang"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
     },
     {
-      description: "Disable github-go",
-      matchManagers: ["gomod"],
-      matchDepNames: ["github.com/google/go-github/v56"],
-      enabled: false,
+      "description": "Disable slim-sprig",
+      "matchManagers": ["gomod"],
+      "matchDepNames": ["github.com/go-task/slim-sprig"],
+      "matchFileNames": ["hack/tools/**"],
+      "enabled": false
     },
     {
-      description: "Disable update k8s packages",
-      matchManagers: ["gomod"],
-      matchDepNames: ["k8s.io/api", "k8s.io/apimachinery", "k8s.io/apiserver", "k8s.io/client-go", "k8s.io/kubectl", "k8s.io/code-generator"],
-      enabled: false,
+      "description": "Disable helm",
+      "matchManagers": ["gomod"],
+      "matchDepNames": ["helm.sh/helm/v3"],
+      "enabled": false
+    },
+    {
+       "description": "Disable github-go",
+       "matchManagers": ["gomod"],
+       "matchDepNames": ["github.com/google/go-github/v56"],
+       "enabled": false
+    },
+    {
+      "description": "Disable update k8s packages",
+      "matchManagers": ["gomod"],
+      "matchDepNames": [
+         "k8s.io/api",
+         "k8s.io/apimachinery",
+         "k8s.io/apiserver",
+         "k8s.io/client-go",
+         "k8s.io/kubectl",
+         "k8s.io/code-generator"
+       ],
+      "enabled": false,
     },
   ],
 }
