@@ -26,7 +26,7 @@ jobs:
       - name: Verify Shellcheck
         run: make verify-shellcheck
 
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4
         with:
           node-version: "18"
       - name: Install renovate
@@ -64,7 +64,7 @@ jobs:
           configuration-path: .github/labeler.yaml
           repo-token: ${{ steps.generate-token.outputs.token }}
       - name: Sync Labels
-        uses: EndBug/label-sync@da00f2c11fdb78e4fae44adac2fdd713778ea3e8 # v2
+        uses: EndBug/label-sync@52074158190acb45f3077f9099fea818aa43f97a # v2
         with:
           config-file: .github/labels.yaml
           token: ${{ steps.generate-token.outputs.token }}
