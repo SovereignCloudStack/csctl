@@ -111,6 +111,9 @@ func GetCreateOptions(clusterStackPath string) (*CreateOptions, error) {
 			return nil, fmt.Errorf("failed to handle stable mode: %w", err)
 		}
 
+		// update the metadata kubernetes version with the csmctl.yaml config
+		createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
+
 		// TODO: remove
 		latestReleaseInfoWithHash, err := github.GetLocalReleaseInfoWithHash(githubReleasePath)
 		if err != nil {
