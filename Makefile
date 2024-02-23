@@ -20,6 +20,9 @@ ARCH ?= amd64
 IMAGE_PREFIX ?= ghcr.io/sovereigncloudstack
 BUILDER_IMAGE = $(IMAGE_PREFIX)/csctl-builder
 BUILDER_IMAGE_VERSION = $(shell cat .builder-image-version.txt)
+Version := $(shell git describe --tags --always --dirty)
+Commit := $(shell git rev-parse HEAD)
+LDFLAGS := -X github.com/SovereignCloudStack/csmctl/pkg/cmd.Version=$(Version) -X github.com/SovereignCloudStack/csmctl/pkg/cmd.Commit=$(Commit)
 
 # Certain aspects of the build are done in containers for consistency (e.g. protobuf generation)
 # If you have the correct tools installed and you want to speed up development you can run
@@ -39,13 +42,23 @@ TOOLS_BIN_DIR := $(TOOLS_DIR)/$(BIN_DIR)
 export PATH := $(abspath $(TOOLS_BIN_DIR)):$(PATH)
 export GOBIN := $(abspath $(TOOLS_BIN_DIR))
 
+##@ Clean   
+#########
+# Clean #
+#########
+
+.PHONY: clean
+clean: ## cleans the csmctl binary
+	@if [ -f csmctl ]; then rm csmctl; fi
+
+
 ##@ Common
 ##########
 # Common #
 ##########
 .PHONY: build
-build: ## build the csctl binary
-	go build -o csctl main.go
+build: # build the csmctl binary
+	go build -ldflags "$(LDFLAGS)" -o csmctl main.go
 
 .PHONY: lint-golang
 lint-golang: ## Lint Golang codebase
