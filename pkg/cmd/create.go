@@ -22,10 +22,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/SovereignCloudStack/csmctl/pkg/clusterstack"
-	"github.com/SovereignCloudStack/csmctl/pkg/github"
-	"github.com/SovereignCloudStack/csmctl/pkg/hash"
-	"github.com/SovereignCloudStack/csmctl/pkg/template"
+	"github.com/SovereignCloudStack/csctl/pkg/clusterstack"
+	"github.com/SovereignCloudStack/csctl/pkg/github"
+	"github.com/SovereignCloudStack/csctl/pkg/hash"
+	"github.com/SovereignCloudStack/csctl/pkg/template"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -42,9 +42,9 @@ var (
 	Supported modes are - stable, alpha, beta, hash
 
 	note - Hash mode takes the last hash of the git commit.`
-	example = `csmctl create tests/cluster-stacks/docker/ferrol -m hash (for hash mode)
+	example = `csctl create tests/cluster-stacks/docker/ferrol -m hash (for hash mode)
 
-	csmctl create tests/cluster-stacks/docker/ferrol -m hash --github-release github-release/ (for stable mode)`
+	csctl create tests/cluster-stacks/docker/ferrol -m hash --github-release github-release/ (for stable mode)`
 )
 
 var (
@@ -58,7 +58,7 @@ var (
 type CreateOptions struct {
 	ClusterStackPath       string
 	ClusterStackReleaseDir string
-	Config                 clusterstack.CsmctlConfig
+	Config                 clusterstack.CsctlConfig
 	Metadata               clusterstack.MetaData
 	CurrentReleaseHash     hash.ReleaseHash
 	LatestReleaseHash      hash.ReleaseHash
@@ -86,7 +86,7 @@ func GetCreateOptions(clusterStackPath string) (*CreateOptions, error) {
 	createOption := &CreateOptions{}
 
 	// ClusterAddon config
-	config, err := clusterstack.GetCsmctlConfig(clusterStackPath)
+	config, err := clusterstack.GetCsctlConfig(clusterStackPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get config: %w", err)
 	}

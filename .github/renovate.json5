@@ -7,12 +7,12 @@
     ":semanticCommits",
     "helpers:pinGitHubActionDigests",
     "github>whitesource/merge-confidence:beta",
-    "github>SovereignCloudStack/csmctl//.github/renovate/commitMessage.json5",
-    "github>SovereignCloudStack/csmctl//.github/renovate/approval.json5",
-    "github>SovereignCloudStack/csmctl//.github/renovate/golang.json5",
-    "github>SovereignCloudStack/csmctl//.github/renovate/groups.json5",
-    "github>SovereignCloudStack/csmctl//.github/renovate/labels.json5",
-    "github>SovereignCloudStack/csmctl//.github/renovate/regexManagers.json5"
+    "github>SovereignCloudStack/csctl//.github/renovate/commitMessage.json5",
+    "github>SovereignCloudStack/csctl//.github/renovate/approval.json5",
+    "github>SovereignCloudStack/csctl//.github/renovate/golang.json5",
+    "github>SovereignCloudStack/csctl//.github/renovate/groups.json5",
+    "github>SovereignCloudStack/csctl//.github/renovate/labels.json5",
+    "github>SovereignCloudStack/csctl//.github/renovate/regexManagers.json5"
   ],
   platform: "github",
   baseBranches: ["main"],
@@ -20,7 +20,7 @@
   requireConfig: "ignored",
   timezone: "Europe/Berlin",
   // repo config
-  repositories: ["SovereignCloudStack/csmctl"],
+  repositories: ["SovereignCloudStack/csctl"],
   ignorePaths: [
     "**/vendor/**",
     "**/test/**",

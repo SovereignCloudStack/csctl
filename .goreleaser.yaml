@@ -1,7 +1,7 @@
-project_name: csmctl
+project_name: csctl
 
 builds:
-  - binary: csmctl
+  - binary: csctl
     goos:
       - linux
     goarch:

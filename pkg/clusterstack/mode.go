@@ -3,8 +3,8 @@ package clusterstack
 import (
 	"fmt"
 
-	"github.com/SovereignCloudStack/csmctl/pkg/git"
-	"github.com/SovereignCloudStack/csmctl/pkg/hash"
+	"github.com/SovereignCloudStack/csctl/pkg/git"
+	"github.com/SovereignCloudStack/csctl/pkg/hash"
 )
 
 // HandleStableMode returns metadata for the stable mode.

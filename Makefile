@@ -18,7 +18,7 @@
 TAG ?= dev
 ARCH ?= amd64
 IMAGE_PREFIX ?= ghcr.io/sovereigncloudstack
-BUILDER_IMAGE = $(IMAGE_PREFIX)/csmctl-builder
+BUILDER_IMAGE = $(IMAGE_PREFIX)/csctl-builder
 BUILDER_IMAGE_VERSION = $(shell cat .builder-image-version.txt)
 
 # Certain aspects of the build are done in containers for consistency (e.g. protobuf generation)
@@ -44,8 +44,8 @@ export GOBIN := $(abspath $(TOOLS_BIN_DIR))
 # Common #
 ##########
 .PHONY: build
-build: ## build the csmctl binary
-	go build -o csmctl main.go
+build: ## build the csctl binary
+	go build -o csctl main.go
 
 .PHONY: lint-golang
 lint-golang: ## Lint Golang codebase

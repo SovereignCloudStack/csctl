@@ -1,4 +1,4 @@
-module github.com/SovereignCloudStack/csmctl
+module github.com/SovereignCloudStack/csctl
 
 go 1.21
 

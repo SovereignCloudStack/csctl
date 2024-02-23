@@ -25,7 +25,7 @@ env:
 # yamllint disable rule:line-length
 jobs:
   update-bot:
-    if: github.repository == 'SovereignCloudStack/csmctl'
+    if: github.repository == 'SovereignCloudStack/csctl'
     name: Renovate
     runs-on: ubuntu-latest
     steps:
@@ -49,7 +49,7 @@ jobs:
         env:
           RENOVATE_HOST_RULES: '[{"hostType": "docker", "matchHost": "ghcr.io", "username": "${{ github.actor }}", "password": "${{ secrets.GITHUB_TOKEN }}" }]'
           RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS: '[".*"]'
-          BUILDER_IMAGE: 'ghcr.io/sovereigncloudstack/csmctl-builder'
+          BUILDER_IMAGE: 'ghcr.io/sovereigncloudstack/csctl-builder'
           RENOVATE_POST_UPGRADE_TASKS: '{ commands: ["BUILD_IMAGE_TOKEN=${{ secrets.GITHUB_TOKEN }} BUILD_IMAGE_USER=${{ github.actor }} CI=true ./hack/upgrade-builder-image.sh"], fileFilters: ["Makefile", ".github/**/*.yml", ".builder-image-version.txt", ".github/**/*.yaml"], executionMode: "branch"}'
         with:
           configurationFile: ${{ env.RENOVATE_CONFIG_FILE }}

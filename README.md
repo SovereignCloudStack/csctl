@@ -1,11 +1,12 @@
-# CSMCTL
+# CSCTL
 
 ## Table of Contents
 
-- [CSMCTL](#csmctl)
+- [CSCTL](#csctl)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
-  - [Features of csmctl](#features-of-csmctl)
+  - [Features of csctl](#features-of-csctl)
+  - [Docs](#docs)
 
 ## Introduction
 
@@ -16,18 +17,18 @@ Users can take existing releases of Cluster Stacks and the operator and will be 
 This project facilitates building node image artifacts and release assets that can be used with the Cluster Stack Operator.
 
 
-## Features of csmctl
+## Features of csctl
 1. Testing and quick iterations
-csmctl is created with a single focus of building Cluster Stacks and testing them with Cluster Stack Operator quickly. This tool helps in doing quick iterations and facilitates testing Cluster Stacks. 
+csctl is created with a single focus of building Cluster Stacks and testing them with Cluster Stack Operator quickly. This tool helps in doing quick iterations and facilitates testing Cluster Stacks. 
 
 2. Versioning
-When configuring Cluster Stacks, it is necessary to put versions in the configuration, e.g. to version a Helm chart or node images. This process is facilitated by the csmctl through its own templating and mechanism to generate the right version, based on the content hash (for testing) or on a previous version (stable or beta channel). Users only have to use the right templating and the csmctl will do all the versioning automatically.
+When configuring Cluster Stacks, it is necessary to put versions in the configuration, e.g. to version a Helm chart or node images. This process is facilitated by the csctl through its own templating and mechanism to generate the right version, based on the content hash (for testing) or on a previous version (stable or beta channel). Users only have to use the right templating and the csctl will do all the versioning automatically.
 
 3. Plugin mechanism for providers
-The plugin mechanism of csmctl allows providers to implement all provider-specific steps that are needed for this provider. This can contain a fully automated building and uploading process for node images, which can be referenced in the Cluster Stack (using the templating logic for versioning). 
+The plugin mechanism of csctl allows providers to implement all provider-specific steps that are needed for this provider. This can contain a fully automated building and uploading process for node images, which can be referenced in the Cluster Stack (using the templating logic for versioning). 
 
 4. Automated testing of Cluster Stacks
-The csmctl enables automated testing of Cluster Stacks if integrated in a CI process that first builds all necessary files as well as node images (if needed) and then uses them to create a workload cluster based on the Cluster Stack.
+The csctl enables automated testing of Cluster Stacks if integrated in a CI process that first builds all necessary files as well as node images (if needed) and then uses them to create a workload cluster based on the Cluster Stack.
 
 ## Docs
 

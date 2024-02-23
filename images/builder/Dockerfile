@@ -43,7 +43,7 @@ FROM docker.io/hadolint/hadolint:v2.12.0-alpine@sha256:7dba9a9f1a0350f6d021fb2f6
 FROM docker.io/aquasec/trivy:0.49.0@sha256:c71420cd77f136e8e900f71d272fb89075f6011019bdcb4b5f7c8e4212f9025e as trivy
 
 ############################
-# csmctl Build Image Base #
+# csctl Build Image Base #
 ############################
 FROM docker.io/library/golang:1.21.6-bullseye@sha256:a8712f27d9ac742e7bded8f81f7547c5635e855e8b80302e8fc0ce424f559295
 

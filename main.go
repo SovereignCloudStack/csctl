@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package main is the entrypoint for csmctl.
+// Package main is the entrypoint for csctl.
 package main
 
-import "github.com/SovereignCloudStack/csmctl/pkg/cmd"
+import "github.com/SovereignCloudStack/csctl/pkg/cmd"
 
 func main() {
 	cmd.Execute()

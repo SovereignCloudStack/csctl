@@ -1,4 +1,4 @@
-# CSMCTL - Design document
+# CSCTL - Design document
 
 # Introduction
 
@@ -20,7 +20,7 @@ The current process of building cluster stacks is rather cumbersome and error-pr
 
 # Proposal
 
-We propose a CLI tool called “csmctl”, which stands for cluster-stack-manager-ctl. This CLI tool should take over all manual work from a developer implementing cluster stacks that can be taken over. The developer should concentrate only on implementing the cluster stacks themselves.
+We propose a CLI tool called “csctl”, which stands for cluster-stack-manager-ctl. This CLI tool should take over all manual work from a developer implementing cluster stacks that can be taken over. The developer should concentrate only on implementing the cluster stacks themselves.
 
 There will be still a certain way of dealing with “cluster stack-specific” jobs, e.g. following a certain templating pattern. This is necessary, as the configuration and Helm Charts that developers implement are very generic.
 
@@ -40,16 +40,16 @@ A developer who has to think about how to version a cluster stack that was imple
 
 If multiple developers work on one cluster stack, they might interfere with each other’s work. Assuming that node images have to be built, then one developer would upload the node images in version “v2”, as the previous version was “v1”. The second developer has the same thought and would either overwrite the already uploaded node images of the colleague or not be able to upload the images since they exist already. 
 
-The csmctl allows both developers to have independent versioning based on a git commit hash.
+The csctl allows both developers to have independent versioning based on a git commit hash.
 
 ### User story 4: Developer updating cluster stack that is used in production
 
-If a developer updates a cluster stack that is used in production, great care is needed. The csmctl allows the developer to safely test cluster stacks, e.g. with a beta channel, without touching cluster stacks that are used in production. 
-If everything works well, a production release can be generated with csmctl.
+If a developer updates a cluster stack that is used in production, great care is needed. The csctl allows the developer to safely test cluster stacks, e.g. with a beta channel, without touching cluster stacks that are used in production. 
+If everything works well, a production release can be generated with csctl.
 
 ### User story 5: Automated testing of cluster stacks
 
-Cluster stacks cannot be tested in the CI and with a normal Git PR flow. The csmctl allows this testing of individual PRs and therefore enables automated testing via CI.
+Cluster stacks cannot be tested in the CI and with a normal Git PR flow. The csctl allows this testing of individual PRs and therefore enables automated testing via CI.
 
 # Risks & Mitigations
 
@@ -57,7 +57,7 @@ Cluster stacks cannot be tested in the CI and with a normal Git PR flow. The csm
 
 Helm charts use Go templating with the notation `{{ .values.myvalue }}`. As a cluster stack consists usually of two Helm charts, this notation will be very common.
 
-However, the csmctl requires a different form of templating, additionally to the one of Helm. This comes from the versioning of the cluster stacks themselves. The Cluster addon version, for example, has to be the version of the respective Helm chart. The same goes for the `ClusterClass` object name.
+However, the csctl requires a different form of templating, additionally to the one of Helm. This comes from the versioning of the cluster stacks themselves. The Cluster addon version, for example, has to be the version of the respective Helm chart. The same goes for the `ClusterClass` object name.
 
  Users have to use the additional templating notation `<< .ClusterAddonVersion >>` while implementing cluster stacks.
 
@@ -67,42 +67,42 @@ The alternative to using a different notation for cluster stack templating would
 
 ## Generic vs provider-specific work
 
-Just like the Cluster Stack Operator, the csmctl also has a generic and a provider-specific part. The provider-specific part is optional.
+Just like the Cluster Stack Operator, the csctl also has a generic and a provider-specific part. The provider-specific part is optional.
 
-The generic work is done with a CLI tool that exists in the repository csmctl in SCS. The tool can be initialized with provider-specific binaries, similar to the way [packer](https://github.com/hashicorp/packer) does it.
+The generic work is done with a CLI tool that exists in the repository csctl in SCS. The tool can be initialized with provider-specific binaries, similar to the way [packer](https://github.com/hashicorp/packer) does it.
 
 ## Generic work
 
-The generic part of the csmctl is 
+The generic part of the csctl is 
 
 1. Calculate the right versions based on git commit hash or previous releases
-2. Template everything with csmctl templating (NOT Helm templating!!)
+2. Template everything with csctl templating (NOT Helm templating!!)
 3. Package the ClusterClass Helm Chart
 4. Package the ClusterAddon Helm Chart
 5. Generate metadata.yaml
 
 ## Provider-specific work
 
-The provider-specific part of csmctl would do anything necessary to provide node images to users. One common task could be to use packer to build images and to upload them somewhere they can be accessed by users.
+The provider-specific part of csctl would do anything necessary to provide node images to users. One common task could be to use packer to build images and to upload them somewhere they can be accessed by users.
 
 Of course, one task would also be to find the right version for the node images (e.g. v2 if something changed since v1, or simply the git commit hash)
 
 ## Configuration
 
-There are multiple ways of configuring the csmctl. They all have specific use cases and will be explained in the following
+There are multiple ways of configuring the csctl. They all have specific use cases and will be explained in the following
 
 ### Configuration file
 
-There is a configuration file called `csmctl.yaml` which contains all values that will never have to be changed for a specific cluster stack. It follows this pattern:
+There is a configuration file called `csctl.yaml` which contains all values that will never have to be changed for a specific cluster stack. It follows this pattern:
 
 ```yaml
-apiVersion: csmctl.clusterstack.x-k8s.io/v1alpha1
+apiVersion: csctl.clusterstack.x-k8s.io/v1alpha1
 config:
   kubernetesVersion: v1.27.7
   clusterStackName: ferrol
   provider:
     type: myprovider
-    apiVersion: myprovider.csmctl.clusterstack.x-k8s.io/v1alpha1
+    apiVersion: myprovider.csctl.clusterstack.x-k8s.io/v1alpha1
 		config: xyz
 ```
 
@@ -114,7 +114,7 @@ Via flags the user can specifiy everything that is important but which might cha
 
 ### Environment variables
 
-Environment variables can be used, for example, to specify tokens and passwords. csmctl has to validate that all required environment variables have been specified.
+Environment variables can be used, for example, to specify tokens and passwords. csctl has to validate that all required environment variables have been specified.
 
 ## Commands of CLI tool
 
@@ -143,7 +143,7 @@ There are multiple modes to create release assets following different versioning
 
 ### Stable
 
-The stable mode requires the developer to specify an existing GitHub repository (in the future other ways of storing release assets are possible) via environment variables. The csmctl will search for the latest release fitting to the configuration of provider, cluster stack name, and Kubernetes version (e.g. docker-ferrol-1-27-vXXX). Then it will download the required release assets and check whether anything has changed in the cluster addon and node image section. Depending on that information it will calculate the next version, e.g. v2 after v1, or will leave the version the same if nothing changed.
+The stable mode requires the developer to specify an existing GitHub repository (in the future other ways of storing release assets are possible) via environment variables. The csctl will search for the latest release fitting to the configuration of provider, cluster stack name, and Kubernetes version (e.g. docker-ferrol-1-27-vXXX). Then it will download the required release assets and check whether anything has changed in the cluster addon and node image section. Depending on that information it will calculate the next version, e.g. v2 after v1, or will leave the version the same if nothing changed.
 
 ### Hash
 
@@ -157,4 +157,4 @@ The beta mode is similar to the stable mode, except that it generates releases f
 
 ### Custom (e.g. for PRs)
 
-The custom mode is designed for PR purposes and supports automated testing. It accommodates versions formatted as v0.custom-pr123. Crucially, these versions must adhere to semantic versioning standards (semver) and are specifically intended as inputs for the csmctl tool.
+The custom mode is designed for PR purposes and supports automated testing. It accommodates versions formatted as v0.custom-pr123. Crucially, these versions must adhere to semantic versioning standards (semver) and are specifically intended as inputs for the csctl tool.

@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/SovereignCloudStack/csmctl/pkg/hash"
+	"github.com/SovereignCloudStack/csctl/pkg/hash"
 )
 
 // GHRelease contains fields for a release.

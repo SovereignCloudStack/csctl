@@ -25,7 +25,7 @@ import (
 
 // rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
-	Use:   "csmctl",
+	Use:   "csctl",
 	Short: "It is used to create cluster stack release.",
 	Long: `It is used building release artifacts using cluster stack template and
 by calculating latest GitHub release hash.`,

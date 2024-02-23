@@ -16,6 +16,6 @@ temp
 .reports
 # build and release
 dist
-csmctl
+csctl
 tmp/
 releases/

@@ -1,4 +1,4 @@
-name: Build csmctl binary
+name: Build csctl binary
 # yamllint disable rule:line-length
 on: # yamllint disable-line rule:truthy
   push:
@@ -19,4 +19,4 @@ jobs:
       # Load Golang cache build from GitHub
       - name: build go binary
         run: |
-          go build -o csmctl main.go
+          go build -o csctl main.go
