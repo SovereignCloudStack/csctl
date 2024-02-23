@@ -208,7 +208,7 @@ func (c *CreateOptions) generateRelease() error {
 		return fmt.Errorf("failed to read cluster-addon-values.yaml: %w", err)
 	}
 
-	if err := os.WriteFile(filepath.Join(c.ClusterStackReleaseDir, "cluster-addon-values.yaml"), clusterAddonData, os.ModePerm); err != nil {
+	if err := os.WriteFile(filepath.Join(c.ClusterStackReleaseDir, "cluster-addon-values.yaml"), clusterAddonData, os.FileMode(0o644)); err != nil {
 		return fmt.Errorf("failed to write cluster-addon-values.yaml: %w", err)
 	}
 
