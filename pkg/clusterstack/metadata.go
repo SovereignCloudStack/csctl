@@ -27,7 +27,7 @@ import (
 // Component contains component.
 type Component struct {
 	ClusterAddon string `yaml:"clusterAddon"`
-	NodeImage    string `yaml:"nodeImage"`
+	NodeImage    string `yaml:"nodeImage,omitempty"`
 }
 
 // Versions contains version information.
@@ -45,16 +45,7 @@ type MetaData struct {
 
 // ParseMetaData parse the metadata file.
 func ParseMetaData(path string) (MetaData, error) {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return MetaData{}, fmt.Errorf("failed to read metadata directory: %w", err)
-	}
-
-	if len(entries) != 1 {
-		return MetaData{}, fmt.Errorf("ambiguous release found")
-	}
-
-	metadataPath := filepath.Join(path, entries[0].Name(), "metadata.yaml")
+	metadataPath := filepath.Join(path, "metadata.yaml")
 	fileInfo, err := os.ReadFile(filepath.Clean(metadataPath))
 	if err != nil {
 		return MetaData{}, fmt.Errorf("failed to read metadata file: %w", err)
