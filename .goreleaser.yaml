@@ -10,4 +10,7 @@ builds:
       - arm64
     env:
       - CGO_ENABLED=0
-    ldflags: -w -s -X github.com/SovereignCloudStack/csmctl/pkg/cmd.Version={{.Version}} -X github.com/SovereignCloudStack/csmctl/pkg/cmd.Commit={{.Commit}}
+    ldflags:
+      - -s -w 
+      - -X 'github.com/SovereignCloudStack/csctl/pkg/cmd.Version={{.Version}}'
+      - -X 'github.com/SovereignCloudStack/csctl/pkg/cmd.Commit={{.Commit}}'
