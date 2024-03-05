@@ -17,5 +17,6 @@ temp
 # build and release
 dist
 csctl
+csctl-openstack
 tmp/
 releases/

@@ -27,6 +27,7 @@ import (
 	"github.com/SovereignCloudStack/csctl/pkg/github"
 	"github.com/SovereignCloudStack/csctl/pkg/github/client"
 	"github.com/SovereignCloudStack/csctl/pkg/hash"
+	"github.com/SovereignCloudStack/csctl/pkg/providerplugin"
 	"github.com/SovereignCloudStack/csctl/pkg/template"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -109,7 +110,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			return nil, fmt.Errorf("failed to create new github client: %w", err)
 		}
 
-		// update the metadata kubernetes version with the csmctl.yaml config
+		// update the metadata kubernetes version with the csctl.yaml config
 		createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 
 		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, &config, gc)
@@ -154,6 +155,16 @@ func createAction(cmd *cobra.Command, args []string) error {
 	if mode != stableMode && mode != hashMode {
 		fmt.Println("The mode is ", mode)
 		return fmt.Errorf("mode is not supported please choose from - stable, hash")
+	}
+
+	// Get csctl config form cluster stacks.
+	config, err := clusterstack.GetCsctlConfig(clusterStackPath)
+	if err != nil {
+		return fmt.Errorf("failed to get config: %w", err)
+	}
+	_, _, err = providerplugin.GetProviderExecutable(&config)
+	if err != nil {
+		return fmt.Errorf("failed to get provider executable: %w", err)
 	}
 
 	createOpts, err := GetCreateOptions(cmd.Context(), clusterStackPath)
@@ -244,5 +255,8 @@ func (c *CreateOptions) generateRelease() error {
 		return fmt.Errorf("failed to write metadata: %w", err)
 	}
 
+	if err := providerplugin.CreateNodeImages(&c.Config, c.ClusterStackPath, c.ClusterStackReleaseDir); err != nil {
+		return fmt.Errorf("failed to create node images: %w", err)
+	}
 	return nil
 }
