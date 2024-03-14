@@ -133,8 +133,8 @@ help				  print a overview of available flags etc.
 
 subcommands for provider:
 install				Installs a cluster-stack-release-provider at a version
-installed			Lists installed csmtcl release providers
-remove				removes a csmtcl release provider at a version `csmtcl provider remove docker <version>`
+installed			Lists installed csctl release providers
+remove				removes a csctl release provider at a version `csctl provider remove docker <version>`
 ```
 
 ## Modes

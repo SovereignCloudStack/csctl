@@ -27,6 +27,7 @@ import (
 	"github.com/SovereignCloudStack/csctl/pkg/github"
 	"github.com/SovereignCloudStack/csctl/pkg/github/client"
 	"github.com/SovereignCloudStack/csctl/pkg/hash"
+	"github.com/SovereignCloudStack/csctl/pkg/providerplugin"
 	"github.com/SovereignCloudStack/csctl/pkg/template"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -91,6 +92,11 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 	createOption.ClusterStackPath = clusterStackPath
 	createOption.Config = config
 
+	_, _, err = providerplugin.GetProviderExecutable(&config)
+	if err != nil {
+		return createOption, fmt.Errorf("providerplugin.GetProviderExecutable(&config) failed: %w", err)
+	}
+
 	currentHash, err := hash.GetHash(clusterStackPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get hash: %w", err)
@@ -109,7 +115,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			return nil, fmt.Errorf("failed to create new github client: %w", err)
 		}
 
-		// update the metadata kubernetes version with the csmctl.yaml config
+		// update the metadata kubernetes version with the csctl.yaml config
 		createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 
 		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, &config, gc)
@@ -189,7 +195,7 @@ func (c *CreateOptions) generateRelease() error {
 	if err := os.MkdirAll(c.ClusterStackReleaseDir, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
-
+	fmt.Printf("Creating output in %s\n", c.ClusterStackReleaseDir)
 	// Write the current hash
 	hashJSONData, err := json.MarshalIndent(c.CurrentReleaseHash, "", "  ")
 	if err != nil {
@@ -244,5 +250,9 @@ func (c *CreateOptions) generateRelease() error {
 		return fmt.Errorf("failed to write metadata: %w", err)
 	}
 
+	err = providerplugin.CreateNodeImages(&c.Config, c.ClusterStackPath, c.ClusterStackReleaseDir)
+	if err != nil {
+		return fmt.Errorf("providerplugin.CreateNodeImages() failed: %w", err)
+	}
 	return nil
 }
