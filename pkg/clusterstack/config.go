@@ -40,7 +40,8 @@ type CsctlConfig struct {
 			Type       string `yaml:"type"`
 			APIVersion string `yaml:"apiVersion"`
 			Config     struct {
-				Method string `yaml:"method"`
+				Method string    `yaml:"method"`
+				Images []*string `yaml:"images,omitempty"`
 			} `yaml:"config"`
 		} `yaml:"provider"`
 	} `yaml:"config"`
