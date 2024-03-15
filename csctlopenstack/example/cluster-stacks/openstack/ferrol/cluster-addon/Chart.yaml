@@ -1,0 +1,14 @@
+apiVersion: v2
+dependencies:
+- alias: metrics-server
+  name: metrics-server
+  repository: https://kubernetes-sigs.github.io/metrics-server/
+  version: 3.11.0
+description: 'This chart installs and configures: * Openstack Ferrol Cluster Class '
+maintainers:
+- email: info@syself.com
+  name: Syself
+  url: https://github.com/syself
+name: openstack-ferrol-1-27-cluster-addon
+type: application
+version: << .ClusterAddonVersion >>

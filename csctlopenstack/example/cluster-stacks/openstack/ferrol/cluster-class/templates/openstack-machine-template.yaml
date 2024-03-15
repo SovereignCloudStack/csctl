@@ -1,0 +1,13 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+kind: OpenStackMachineTemplate
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Version }}-control-plane-machinetemplate-openstack
+  namespace: {{ .Release.Namespace }}
+spec:
+  template:
+    spec:
+      cloudName: gx-scs
+      flavor: SCS-2V:4:20
+      identityRef:
+        kind: Secret
+        name: cs-cluster-cloud-config

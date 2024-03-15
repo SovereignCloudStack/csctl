@@ -18,6 +18,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -25,7 +26,21 @@ import (
 	"strings"
 
 	csctlclusterstack "github.com/SovereignCloudStack/csctl/pkg/clusterstack"
+	minio "github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+	"gopkg.in/yaml.v2"
 )
+
+// RegistryConfig represents the structure of the registry.yaml file.
+type RegistryConfig struct {
+	Type   string `yaml:"type"`
+	Config struct {
+		Endpoint  string `yaml:"endpoint"`
+		Bucket    string `yaml:"bucket"`
+		AccessKey string `yaml:"accessKey"`
+		SecretKey string `yaml:"secretKey"`
+	} `yaml:"config"`
+}
 
 const provider = "openstack"
 
@@ -83,6 +98,7 @@ func main() {
 
 				if _, err := os.Stat(packerImagePath); err == nil {
 					fmt.Println("Running packer build...")
+					// #nosec G204
 					cmd := exec.Command("packer", "build", packerImagePath)
 					cmd.Stdout = os.Stdout
 					cmd.Stderr = os.Stderr
@@ -92,11 +108,20 @@ func main() {
 					}
 					fmt.Println("Packer build completed successfully.")
 
-					// // Push the built image to S3
-					// if err := pushToS3(releaseDir, *image); err != nil {
-					// 	fmt.Printf("Error pushing image to S3: %v\n", err)
-					// 	os.Exit(1)
-					// }
+					registryConfig := filepath.Join(clusterStackPath, "node-images", "registry.yaml")
+					// Get the current working directory
+					currentDir, err := os.Getwd()
+					if err != nil {
+						fmt.Printf("Error getting current working directory: %v\n", err)
+						os.Exit(1)
+					}
+					ouputImageDir := filepath.Join(currentDir, "output", *image)
+					// Push the built image to S3
+					if err := pushToS3(ouputImageDir, *image, registryConfig); err != nil {
+						fmt.Printf("Error pushing image to S3: %v\n", err)
+						os.Exit(1)
+					}
+					// TODO: create node-images.yaml in releaseDir after building and pushing image to registry were successful
 				} else {
 					fmt.Printf("Image folder %s does not exist\n", packerImagePath)
 				}
@@ -107,4 +132,50 @@ func main() {
 	default:
 		fmt.Println("Unknown method:", method)
 	}
+}
+
+func pushToS3(filePath, fileName, configFilePath string) error {
+	// Load configuration from YAML file
+	// #nosec G304
+	configFile, err := os.Open(configFilePath)
+	if err != nil {
+		return fmt.Errorf("error opening config file: %w", err)
+	}
+	defer configFile.Close()
+
+	var registryConfig RegistryConfig
+	decoder := yaml.NewDecoder(configFile)
+	if err := decoder.Decode(&registryConfig); err != nil {
+		return fmt.Errorf("error decoding config file: %w", err)
+	}
+
+	// Initialize Minio client
+	minioClient, err := minio.New(registryConfig.Config.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(registryConfig.Config.AccessKey, registryConfig.Config.SecretKey, ""),
+		Secure: true,
+	})
+	if err != nil {
+		return fmt.Errorf("error initializing Minio client: %w", err)
+	}
+
+	// Open file to upload
+	// #nosec G304
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("error opening file: %w", err)
+	}
+	defer file.Close()
+
+	// Get file info
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return fmt.Errorf("error getting file info: %w", err)
+	}
+
+	// Upload file to bucket
+	_, err = minioClient.PutObject(context.Background(), registryConfig.Config.Bucket, fileName, file, fileInfo.Size(), minio.PutObjectOptions{})
+	if err != nil {
+		return fmt.Errorf("error uploading file: %w", err)
+	}
+	return nil
 }

@@ -1,0 +1,6 @@
+type: S3
+config:
+    endpoint: <endpoint>
+    bucket: <bucket_name>
+    accessKey: <access_key>
+    secretKey: <secret_key>

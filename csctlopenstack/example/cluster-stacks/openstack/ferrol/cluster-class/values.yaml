@@ -1,0 +1,5 @@
+images:
+  controlPlane:
+    - name: ubuntu-capi-image-v1.27.8
+  worker:
+    - name: ubuntu-capi-image-v1.27.8

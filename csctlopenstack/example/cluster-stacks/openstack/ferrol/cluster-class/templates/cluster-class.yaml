@@ -1,0 +1,87 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: ClusterClass
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Version }}
+  namespace: {{.Release.Namespace}}
+spec:
+  controlPlane:
+    ref:
+      apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      kind: KubeadmControlPlaneTemplate
+      name: {{ .Release.Name }}-{{ .Chart.Version }}-control-plane
+      namespace: {{ .Release.Namespace }}
+    machineInfrastructure:
+      ref:
+        kind: OpenStackMachineTemplate
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+        name: {{ .Release.Name }}-{{ .Chart.Version }}-control-plane-machinetemplate-openstack
+        namespace: {{ .Release.Namespace }}
+  infrastructure:
+    ref:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+      kind: OpenStackClusterTemplate
+      name: {{ .Release.Name }}-{{ .Chart.Version }}-cluster
+      namespace: {{ .Release.Namespace }}
+  workers:
+    machineDeployments:
+    - class: workeramd64
+      template:
+        bootstrap:
+          ref:
+            apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+            kind: KubeadmConfigTemplate
+            name: {{ .Release.Name }}-{{ .Chart.Version }}-worker-bootstraptemplate-openstack
+            namespace: {{ .Release.Namespace }}
+        infrastructure:
+          ref:
+            apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+            kind: OpenStackMachineTemplate
+            name: {{ .Release.Name }}-{{ .Chart.Version }}-worker-machinetemplate-openstack
+            namespace: {{ .Release.Namespace }}
+  variables:
+  - name: imageRepository
+    required: true
+    schema:
+      openAPIV3Schema:
+        type: string
+        default: ""
+        example: "registry.k8s.io"
+        description: "imageRepository sets the container registry to pull images from. If empty, nothing will be set and the from of kubeadm will be used."
+  patches:
+  - name: imageRepository
+    description: "Sets the imageRepository used for the KubeadmControlPlane."
+    enabledIf: '{{ ne .imageRepository "" }}'
+    definitions:
+    - selector:
+        apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+        kind: KubeadmControlPlaneTemplate
+        matchResources:
+          controlPlane: true
+      jsonPatches:
+      - op: add
+        path: "/spec/template/spec/kubeadmConfigSpec/clusterConfiguration/imageRepository"
+        valueFrom:
+          variable: imageRepository
+  - name: image
+    description: "Sets the container image that is used for running openstackMachines for the controlplane and worker machineDeployments."
+    definitions:
+    - selector:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+        kind: OpenStackMachineTemplate
+        matchResources:
+          machineDeploymentClass:
+            names:
+            - workeramd64
+      jsonPatches:
+      - op: add
+        path: "/spec/template/spec/image"
+        value: {{ (index .Values.images.worker 0).name }}
+    - selector:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha7
+        kind: OpenStackMachineTemplate
+        matchResources:
+          controlPlane: true
+      jsonPatches:
+      - op: add
+        path: "/spec/template/spec/image"
+        value: {{ (index .Values.images.controlPlane 0).name }}
