@@ -31,12 +31,12 @@ var (
 
 var versionCmd = &cobra.Command{
 	Use:          "version",
-	Short:        "prints the latest version of csmctl",
+	Short:        "prints the latest version of csctl",
 	Run:          printVersion,
 	SilenceUsage: true,
 }
 
 func printVersion(_ *cobra.Command, _ []string) {
-	fmt.Println("csmctl version:", Version)
+	fmt.Println("csctl version:", Version)
 	fmt.Println("commit:", Commit)
 }

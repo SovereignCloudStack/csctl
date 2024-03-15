@@ -59,6 +59,7 @@ clean: ## cleans the csctl binary
 .PHONY: build
 build: # build the csctl binary
 	go build -ldflags "$(LDFLAGS)" -o csctl main.go
+	go build -o csctl-docker csctldocker/csctldocker_main.go
 
 .PHONY: lint-golang
 lint-golang: ## Lint Golang codebase
