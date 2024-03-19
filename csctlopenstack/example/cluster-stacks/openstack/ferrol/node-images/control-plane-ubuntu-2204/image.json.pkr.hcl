@@ -8,9 +8,9 @@ packer {
 }
 
 locals {
-  output_directory = "./output/${var.build_name}"
+  output_directory = "./output"
   scripts          = "${path.root}/scripts"
-  http_directory          = "${path.root}/http"
+  http_directory   = "${path.root}/http"
   vm_name          = "${var.build_name}"
 }
 

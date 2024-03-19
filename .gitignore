@@ -20,3 +20,4 @@ csctl
 csctl-openstack
 tmp/
 releases/
+output/

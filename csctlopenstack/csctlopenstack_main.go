@@ -109,15 +109,21 @@ func main() {
 					fmt.Println("Packer build completed successfully.")
 
 					registryConfig := filepath.Join(clusterStackPath, "node-images", "registry.yaml")
+
 					// Get the current working directory
 					currentDir, err := os.Getwd()
 					if err != nil {
 						fmt.Printf("Error getting current working directory: %v\n", err)
 						os.Exit(1)
 					}
-					ouputImageDir := filepath.Join(currentDir, "output", *image)
+
+					// Path to the image created by the packer
+					// TODO: "output" directory where packer built image should be some variable(registry.yaml?)
+					// Warning: name of the image created by packer should have same name as the name of the image folder in node-images
+					ouputImagePath := filepath.Join(currentDir, "output", *image)
+
 					// Push the built image to S3
-					if err := pushToS3(ouputImageDir, *image, registryConfig); err != nil {
+					if err := pushToS3(ouputImagePath, *image, registryConfig); err != nil {
 						fmt.Printf("Error pushing image to S3: %v\n", err)
 						os.Exit(1)
 					}
