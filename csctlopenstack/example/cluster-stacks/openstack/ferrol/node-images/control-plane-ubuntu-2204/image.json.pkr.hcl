@@ -8,10 +8,8 @@ packer {
 }
 
 locals {
-  output_directory = "./output"
   scripts          = "${path.root}/scripts"
   http_directory   = "${path.root}/http"
-  vm_name          = "${var.build_name}"
 }
 
 source "qemu" "ubuntu" {
@@ -31,13 +29,13 @@ source "qemu" "ubuntu" {
   iso_url          = "${var.image_url}"
   memory           = "${var.memory}"
   net_device       = "virtio-net"
-  output_directory = "${local.output_directory}"
+  output_directory = "${var.output_directory}"
   qemu_binary      = "${var.qemu_binary}"
   shutdown_command = "echo '${var.ssh_password}' | sudo -S -E sh -c 'usermod -L ${var.ssh_username} && ${var.shutdown_command}'"
   ssh_password     = "${var.ssh_password}"
   ssh_username     = "${var.ssh_username}"
   ssh_wait_timeout = "30m"
-  vm_name          = "${local.vm_name}"
+  vm_name          = "${var.build_name}"
 }
 
 build {

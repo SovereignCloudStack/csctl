@@ -42,7 +42,27 @@ type RegistryConfig struct {
 	} `yaml:"config"`
 }
 
-const provider = "openstack"
+// OpenStackNodeImage represents the structure of the OpenStackNodeImages.
+type OpenStackNodeImage struct {
+	URL        string `yaml:"url"`
+	CreateOpts struct {
+		Name            string `yaml:"name"`
+		DiskFormat      string `yaml:"disk_format"`      //nolint:tagliatelle // The `DiskFormat` field in this struct corresponds to the `disk_format` YAML tag
+		ContainerFormat string `yaml:"container_format"` //nolint:tagliatelle // The `ContainerFormat` field in this struct corresponds to the `container_format` YAML tag
+		Visibility      string `yaml:"visibility"`
+	} `yaml:"createOpts"`
+}
+
+// NodeImages represents the structure of the config.yaml file.
+type NodeImages struct {
+	APIVersion          string               `yaml:"apiVersion"`
+	OpenStackNodeImages []OpenStackNodeImage `yaml:"openStackNodeImages"`
+}
+
+const (
+	provider        = "openstack"
+	outputDirectory = "./output"
+)
 
 func usage() {
 	fmt.Printf(`%s create-node-images cluster-stack-directory cluster-stack-release-directory
@@ -61,6 +81,7 @@ func main() {
 		os.Exit(1)
 	}
 	clusterStackPath := os.Args[2]
+	configFilePath := filepath.Join(clusterStackPath, "node-images", "config.yaml")
 	config, err := csctlclusterstack.GetCsctlConfig(clusterStackPath)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -79,17 +100,13 @@ func main() {
 	method := config.Config.Provider.Config.Method
 	switch strings.ToLower(method) {
 	case "get":
-		// #nosec G304
-		nodeImageData, err := os.ReadFile(filepath.Join(clusterStackPath, "node-images", "config.yaml"))
-		if err != nil {
-			fmt.Printf("failed to read config.yaml: %v\n", err)
+		// Copy config.yaml to releaseDir as node-images.yaml
+		dest := filepath.Join(releaseDir, "node-images.yaml")
+		if err := copyFile(configFilePath, dest); err != nil {
+			fmt.Printf("Error copying config.yaml to releaseDir: %v\n", err)
 			os.Exit(1)
 		}
-
-		if err := os.WriteFile(filepath.Join(releaseDir, "node-images.yaml"), nodeImageData, os.FileMode(0o644)); err != nil {
-			fmt.Printf("failed to write config.yaml: %v\n", err)
-			os.Exit(1)
-		}
+		fmt.Println("config.yaml copied to releaseDir as node-images.yaml successfully!")
 	case "build":
 		if len(config.Config.Provider.Config.Images) > 0 {
 			for _, image := range config.Config.Provider.Config.Images {
@@ -99,7 +116,7 @@ func main() {
 				if _, err := os.Stat(packerImagePath); err == nil {
 					fmt.Println("Running packer build...")
 					// #nosec G204
-					cmd := exec.Command("packer", "build", packerImagePath)
+					cmd := exec.Command("packer", "build", "-var", "build_name="+*image, "-var", "output_directory="+outputDirectory, packerImagePath)
 					cmd.Stdout = os.Stdout
 					cmd.Stderr = os.Stderr
 					if err := cmd.Run(); err != nil {
@@ -108,7 +125,7 @@ func main() {
 					}
 					fmt.Println("Packer build completed successfully.")
 
-					registryConfig := filepath.Join(clusterStackPath, "node-images", "registry.yaml")
+					registryConfigPath := filepath.Join(clusterStackPath, "node-images", "registry.yaml")
 
 					// Get the current working directory
 					currentDir, err := os.Getwd()
@@ -118,16 +135,27 @@ func main() {
 					}
 
 					// Path to the image created by the packer
-					// TODO: "output" directory where packer built image should be some variable(registry.yaml?)
 					// Warning: name of the image created by packer should have same name as the name of the image folder in node-images
-					ouputImagePath := filepath.Join(currentDir, "output", *image)
+					ouputImagePath := filepath.Join(currentDir, outputDirectory, *image)
 
 					// Push the built image to S3
-					if err := pushToS3(ouputImagePath, *image, registryConfig); err != nil {
+					if err := pushToS3(ouputImagePath, *image, registryConfigPath); err != nil {
 						fmt.Printf("Error pushing image to S3: %v\n", err)
 						os.Exit(1)
 					}
 					// TODO: create node-images.yaml in releaseDir after building and pushing image to registry were successful
+					// Update URL in config.yaml if it is necessary
+					if err := updateURLNodeImages(configFilePath, registryConfigPath, *image); err != nil {
+						fmt.Printf("Error updating URL in config.yaml: %v\n", err)
+						os.Exit(1)
+					}
+					// Copy config.yaml to releaseDir as node-images.yaml
+					dest := filepath.Join(releaseDir, "node-images.yaml")
+					if err := copyFile(configFilePath, dest); err != nil {
+						fmt.Printf("Error copying config.yaml to releaseDir: %v\n", err)
+						os.Exit(1)
+					}
+					fmt.Println("config.yaml copied to releaseDir as node-images.yaml successfully!")
 				} else {
 					fmt.Printf("Image folder %s does not exist\n", packerImagePath)
 				}
@@ -140,19 +168,19 @@ func main() {
 	}
 }
 
-func pushToS3(filePath, fileName, configFilePath string) error {
-	// Load configuration from YAML file
+func pushToS3(filePath, fileName, registryConfigPath string) error {
+	// Load registry configuration from YAML file
 	// #nosec G304
-	configFile, err := os.Open(configFilePath)
+	registryConfigFile, err := os.Open(registryConfigPath)
 	if err != nil {
-		return fmt.Errorf("error opening config file: %w", err)
+		return fmt.Errorf("error opening registry config file: %w", err)
 	}
-	defer configFile.Close()
+	defer registryConfigFile.Close()
 
 	var registryConfig RegistryConfig
-	decoder := yaml.NewDecoder(configFile)
+	decoder := yaml.NewDecoder(registryConfigFile)
 	if err := decoder.Decode(&registryConfig); err != nil {
-		return fmt.Errorf("error decoding config file: %w", err)
+		return fmt.Errorf("error decoding registry config file: %w", err)
 	}
 
 	// Initialize Minio client
@@ -183,5 +211,81 @@ func pushToS3(filePath, fileName, configFilePath string) error {
 	if err != nil {
 		return fmt.Errorf("error uploading file: %w", err)
 	}
+	return nil
+}
+
+func updateURLNodeImages(configFilePath, registryConfigPath, imageName string) error {
+	// Read the config.yaml file
+	// #nosec G304
+	nodeImageData, err := os.ReadFile(configFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to read config.yaml: %w", err)
+	}
+
+	// Unmarshal YAML data into NodeImages struct
+	var nodeImages NodeImages
+	if err := yaml.Unmarshal(nodeImageData, &nodeImages); err != nil {
+		return fmt.Errorf("failed to unmarshal YAML: %w", err)
+	}
+
+	// Check if the URL already exists for the given image
+	var imageURLExists bool
+	for _, image := range nodeImages.OpenStackNodeImages {
+		if image.URL != "" {
+			imageURLExists = true
+			break
+		}
+	}
+	// If the URL doesn't exist, update it for the image
+	if !imageURLExists {
+		// Load registry configuration from YAML file
+		// #nosec G304
+		registryConfigFile, err := os.Open(registryConfigPath)
+		if err != nil {
+			return fmt.Errorf("error opening registry config file: %w", err)
+		}
+		defer registryConfigFile.Close()
+
+		var registryConfig RegistryConfig
+		decoder := yaml.NewDecoder(registryConfigFile)
+		if err := decoder.Decode(&registryConfig); err != nil {
+			return fmt.Errorf("error decoding registry config file: %w", err)
+		}
+		// Generate URL
+		newURL := fmt.Sprintf("%s%s/%s/%s", "https://", registryConfig.Config.Endpoint, registryConfig.Config.Bucket, imageName)
+		for i := range nodeImages.OpenStackNodeImages {
+			nodeImages.OpenStackNodeImages[i].URL = newURL
+			break
+		}
+
+		// Marshal the updated struct back to YAML
+		updatedNodeImageData, err := yaml.Marshal(&nodeImages)
+		if err != nil {
+			return fmt.Errorf("failed to marshal YAML: %w", err)
+		}
+
+		// Write the updated YAML data back to the file
+		if err := os.WriteFile(configFilePath, updatedNodeImageData, os.FileMode(0o644)); err != nil {
+			return fmt.Errorf("failed to write config.yaml: %w", err)
+		}
+
+		fmt.Printf("URL updated for image: %s\n", newURL)
+	} else {
+		fmt.Printf("URL already exists for the image\n")
+	}
+	return nil
+}
+
+func copyFile(src, dest string) error {
+	// #nosec G304
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return fmt.Errorf("error reading source file: %w", err)
+	}
+
+	if err := os.WriteFile(dest, data, os.FileMode(0o644)); err != nil {
+		return fmt.Errorf("error writing to destination file: %w", err)
+	}
+
 	return nil
 }

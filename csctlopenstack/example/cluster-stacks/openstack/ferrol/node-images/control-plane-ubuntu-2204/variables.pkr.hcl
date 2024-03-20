@@ -11,7 +11,7 @@ variable "boot_wait" {
 
 variable "build_name" {
   type    = string
-  default = "control-plane-ubuntu-2204"
+  default = ""
 }
 
 variable "cpus" {
@@ -62,6 +62,11 @@ variable "memory" {
 variable "os" {
   type    = string
   default = "ubuntu-22.04"
+}
+
+variable "output_directory" {
+  type    = string
+  default = ""
 }
 
 variable "qemu_binary" {
