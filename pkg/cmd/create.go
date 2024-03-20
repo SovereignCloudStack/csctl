@@ -51,8 +51,9 @@ var (
 )
 
 var (
-	mode            string
-	outputDirectory string
+	mode              string
+	outputDirectory   string
+	nodeImageRegistry string
 )
 
 // CreateOptions contains config for creating a release.
@@ -63,6 +64,7 @@ type CreateOptions struct {
 	Metadata               clusterstack.MetaData
 	CurrentReleaseHash     hash.ReleaseHash
 	LatestReleaseHash      hash.ReleaseHash
+	NodeImageRegistry      string
 }
 
 // createCmd represents the create command.
@@ -78,6 +80,7 @@ var createCmd = &cobra.Command{
 func init() {
 	createCmd.Flags().StringVarP(&mode, "mode", "m", "stable", "It defines the mode of the cluster stack manager")
 	createCmd.Flags().StringVarP(&outputDirectory, "output", "o", "./releases", "It defines the output directory in which the release artifacts will be generated")
+	createCmd.Flags().StringVarP(&nodeImageRegistry, "node-image-registry", "r", "", "It defines the node image registry. For example oci://ghcr.io/foo/bar/node-images/staging/")
 }
 
 // GetCreateOptions create a Create Option for create command.
@@ -147,6 +150,8 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 	}
 	// Release directory name `release/docker-ferrol-1-27-v1`
 	createOption.ClusterStackReleaseDir = filepath.Join(outputDirectory, releaseDirName)
+
+	createOption.NodeImageRegistry = nodeImageRegistry
 
 	return createOption, nil
 }
@@ -250,7 +255,10 @@ func (c *CreateOptions) generateRelease() error {
 		return fmt.Errorf("failed to write metadata: %w", err)
 	}
 
-	err = providerplugin.CreateNodeImages(&c.Config, c.ClusterStackPath, c.ClusterStackReleaseDir)
+	err = providerplugin.CreateNodeImages(&c.Config,
+		c.ClusterStackPath,
+		c.ClusterStackReleaseDir,
+		c.NodeImageRegistry)
 	if err != nil {
 		return fmt.Errorf("providerplugin.CreateNodeImages() failed: %w", err)
 	}
