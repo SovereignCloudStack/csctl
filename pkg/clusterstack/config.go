@@ -37,9 +37,12 @@ type CsctlConfig struct {
 		KubernetesVersion string `yaml:"kubernetesVersion"`
 		ClusterStackName  string `yaml:"clusterStackName"`
 		Provider          struct {
-			Type       string                 `yaml:"type"`
-			APIVersion string                 `yaml:"apiVersion"`
-			Config     map[string]interface{} `yaml:"config"`
+			Type       string `yaml:"type"`
+			APIVersion string `yaml:"apiVersion"`
+			Config     struct {
+				Method string    `yaml:"method"`
+				Images []*string `yaml:"images,omitempty"`
+			} `yaml:"config"`
 		} `yaml:"provider"`
 	} `yaml:"config"`
 }

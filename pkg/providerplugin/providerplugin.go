@@ -29,7 +29,7 @@ import (
 // GetProviderExecutable returns the path to the provider plugin (like "csctl-docker").
 // If there is not "config" for the provider in csctl.yaml, then "needed" is false and "path" is the empty string.
 func GetProviderExecutable(config *clusterstack.CsctlConfig) (needed bool, path string, err error) {
-	if len(config.Config.Provider.Config) == 0 {
+	if config.Config.Provider.Config.Method == "" {
 		return false, "", nil
 	}
 	pluginName := "csctl-" + config.Config.Provider.Type
