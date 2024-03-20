@@ -49,16 +49,17 @@ func GetProviderExecutable(config *clusterstack.CsctlConfig) (needed bool, path 
 }
 
 // CreateNodeImages calls the provider plugin command to create nodes images.
-func CreateNodeImages(config *clusterstack.CsctlConfig, clusterStackPath, clusterStackReleaseDir string) error {
+func CreateNodeImages(config *clusterstack.CsctlConfig, clusterStackPath, clusterStackReleaseDir, nodeImageRegistry string) error {
 	needed, path, err := GetProviderExecutable(config)
 	if err != nil {
 		return err
 	}
 	if !needed {
-		fmt.Printf("No provider specifig configuration in csctl.yaml. No need to call a plugin for provider %q\n", config.Config.Provider.Type)
+		fmt.Printf("No provider specifig configuration in csctl.yaml. No need to call a plugin for provider %q\n",
+			config.Config.Provider.Type)
 		return nil
 	}
-	args := []string{"create-node-images", clusterStackPath, clusterStackReleaseDir}
+	args := []string{"create-node-images", clusterStackPath, clusterStackReleaseDir, nodeImageRegistry}
 	fmt.Printf("Calling Provider Plugin: %s\n", path)
 	cmd := exec.Command(path, args...) // #nosec G204
 	cmd.Stdout = os.Stdout

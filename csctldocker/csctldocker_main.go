@@ -38,7 +38,9 @@ https://github.com/SovereignCloudStack/csctl
 }
 
 func main() {
-	if len(os.Args) != 4 {
+	numArgs := 5
+	if len(os.Args) != numArgs {
+		fmt.Printf("Wrong number of arguments. Expected %d got %d\n", numArgs, len(os.Args))
 		usage()
 		os.Exit(1)
 	}
@@ -62,8 +64,10 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+	nodeImageRegistry := os.Args[4]
 	fmt.Printf("clusterStackPath: %s\n", clusterStackPath)
 	fmt.Printf("releaseDir: %s\n", releaseDir)
+	fmt.Printf("nodeImageRegistry: %s\n", nodeImageRegistry)
 	fmt.Printf("..... pretending to read config: %s\n", config.Config.Provider.Config["dummyKey"])
 	fmt.Printf("..... pretending to do heavy work (creating node images) ...\n")
 }
