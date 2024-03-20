@@ -45,45 +45,45 @@ type CsctlConfig struct {
 }
 
 // GetCsctlConfig returns CsctlConfig.
-func GetCsctlConfig(path string) (CsctlConfig, error) {
+func GetCsctlConfig(path string) (*CsctlConfig, error) {
 	configPath := filepath.Join(path, "csctl.yaml")
 	configFileData, err := os.ReadFile(filepath.Clean(configPath))
 	if err != nil {
-		return CsctlConfig{}, fmt.Errorf("failed to read csctl config: %w", err)
+		return nil, fmt.Errorf("failed to read csctl config: %w", err)
 	}
 
-	cs := CsctlConfig{}
+	cs := &CsctlConfig{}
 	if err := yaml.Unmarshal(configFileData, &cs); err != nil {
-		return CsctlConfig{}, fmt.Errorf("failed to unmarshal csctl yaml: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal csctl yaml: %w", err)
 	}
 
 	if cs.Config.Provider.Type == "" {
-		return CsctlConfig{}, fmt.Errorf("provider type must not be empty")
+		return nil, fmt.Errorf("provider type must not be empty")
 	}
 
 	if len(cs.Config.Provider.Type) > 253 {
-		return CsctlConfig{}, fmt.Errorf("provider name must not be greater than 253")
+		return nil, fmt.Errorf("provider name must not be greater than 253")
 	}
 
 	match, err := regexp.MatchString(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`, cs.Config.Provider.Type)
 	if err != nil {
-		return CsctlConfig{}, fmt.Errorf("failed to provider name match regex: %w", err)
+		return nil, fmt.Errorf("failed to provider name match regex: %w", err)
 	}
 	if !match {
-		return CsctlConfig{}, fmt.Errorf("invalid provider type: %q", cs.Config.Provider.Type)
+		return nil, fmt.Errorf("invalid provider type: %q", cs.Config.Provider.Type)
 	}
 
 	if cs.Config.ClusterStackName == "" {
-		return CsctlConfig{}, fmt.Errorf("cluster stack name must not be empty")
+		return nil, fmt.Errorf("cluster stack name must not be empty")
 	}
 
 	// Validate kubernetes version
 	matched, err := regexp.MatchString(`^v\d+\.\d+\.\d+$`, cs.Config.KubernetesVersion)
 	if err != nil {
-		return CsctlConfig{}, fmt.Errorf("failed to kubernetes match regex: %w", err)
+		return nil, fmt.Errorf("failed to kubernetes match regex: %w", err)
 	}
 	if !matched {
-		return CsctlConfig{}, fmt.Errorf("invalid kubernetes version: %q", cs.Config.KubernetesVersion)
+		return nil, fmt.Errorf("invalid kubernetes version: %q", cs.Config.KubernetesVersion)
 	}
 
 	return cs, nil
