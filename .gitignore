@@ -20,3 +20,7 @@ csctl
 csctl-docker
 tmp/
 releases/
+.tmp
+.release
+.envrc
+dist/

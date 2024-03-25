@@ -220,12 +220,23 @@ func (c *CreateOptions) generateRelease() error {
 	}
 
 	// Build all the templated output and put it in a tmp directory
-	if err := template.GenerateOutputFromTemplate(c.ClusterStackPath, "./tmp/", &c.Metadata); err != nil {
+	if err := template.GenerateOutputFromTemplate(c.ClusterStackPath, "./.tmp/", &c.Metadata); err != nil {
 		return fmt.Errorf("failed to generate tmp output: %w", err)
 	}
 
+	// Overwrite ClusterAddonVersion in cluster-addon/*/Chart.yaml
+	if err := overwriteClusterAddonVersion("./.tmp", c.Metadata.Versions.Components.ClusterAddon); err != nil {
+		return fmt.Errorf("failed to overwrite ClusterAddonVersion in tmp output: %w", err)
+	}
+
+	// Overwrite ClusterClassVersion in cluster-class/Chart.yaml
+	clusterClassChartYaml := "./.tmp/cluster-class/Chart.yaml"
+	if err := overwriteVersionInFile(clusterClassChartYaml, c.Metadata.Versions.ClusterStack); err != nil {
+		return fmt.Errorf("failed to overwrite ClusterClassVersion in %s output: %w", clusterClassChartYaml, err)
+	}
+
 	// Package Helm from the tmp directory to the release directory
-	if err := template.CreatePackage("./tmp/", c.ClusterStackReleaseDir); err != nil {
+	if err := template.CreatePackage("./.tmp/", c.ClusterStackReleaseDir); err != nil {
 		return fmt.Errorf("failed to create template package: %w", err)
 	}
 
@@ -261,6 +272,55 @@ func (c *CreateOptions) generateRelease() error {
 		c.NodeImageRegistry)
 	if err != nil {
 		return fmt.Errorf("providerplugin.CreateNodeImages() failed: %w", err)
+	}
+	return nil
+}
+
+func overwriteClusterAddonVersion(tmpDir, clusterAddonVersion string) error {
+	g := filepath.Join(tmpDir, "cluster-addon", "Chart.yaml")
+	files, err := filepath.Glob(g)
+	if err != nil {
+		return fmt.Errorf("glob for %s failed: %w", g, err)
+	}
+
+	for _, chartYaml := range files {
+		err := overwriteVersionInFile(chartYaml, clusterAddonVersion)
+		if err != nil {
+			return fmt.Errorf("failed to replace version in %s: %w", chartYaml, err)
+		}
+	}
+	return nil
+}
+
+// overwriteVersionInFile replaces "version: v123" with newVersion.
+func overwriteVersionInFile(chartYaml, newVersion string) error {
+	chartYaml = filepath.Clean(chartYaml)
+	data, err := os.ReadFile(chartYaml)
+	if err != nil {
+		return fmt.Errorf("reading file failed: %w", err)
+	}
+
+	m := make(map[string]interface{})
+	err = yaml.Unmarshal(data, m)
+	if err != nil {
+		return fmt.Errorf("failed parsing: %w", err)
+	}
+
+	v := m["version"]
+	oldVersion, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("failed to read version in yaml")
+	}
+
+	m["version"] = newVersion
+	fmt.Printf("%s updating version from %s to %s\n", chartYaml, oldVersion, newVersion)
+	out, err := yaml.Marshal(m)
+	if err != nil {
+		return fmt.Errorf("failed creating yaml: %w", err)
+	}
+	err = os.WriteFile(chartYaml, out, 0o600)
+	if err != nil {
+		return fmt.Errorf("failed write yaml to file: %w", err)
 	}
 	return nil
 }
