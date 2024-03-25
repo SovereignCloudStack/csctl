@@ -6,4 +6,5 @@ maintainers:
   url: https://github.com/syself
 name: docker-ferrol-1-27-cluster-class
 type: application
-version: << .ClusterClassVersion >>
+# version will be overwritten by csctl
+version: v0
