@@ -55,7 +55,7 @@ func CreateNodeImages(config *clusterstack.CsctlConfig, clusterStackPath, cluste
 		return err
 	}
 	if !needed {
-		fmt.Printf("No provider specifig configuration in csctl.yaml. No need to call a plugin for provider %q\n",
+		fmt.Printf("No provider specific configuration in csctl.yaml. No need to call a plugin for provider %q\n",
 			config.Config.Provider.Type)
 		return nil
 	}
