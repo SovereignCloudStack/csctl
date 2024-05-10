@@ -79,7 +79,7 @@ var createCmd = &cobra.Command{
 
 func init() {
 	createCmd.Flags().StringVarP(&mode, "mode", "m", "stable", "It defines the mode of the cluster stack manager")
-	createCmd.Flags().StringVarP(&outputDirectory, "output", "o", "./releases", "It defines the output directory in which the release artifacts will be generated")
+	createCmd.Flags().StringVarP(&outputDirectory, "output", "o", "./.release", "It defines the output directory in which the release artifacts will be generated")
 	createCmd.Flags().StringVarP(&nodeImageRegistry, "node-image-registry", "r", "", "It defines the node image registry. For example oci://ghcr.io/foo/bar/node-images/staging/")
 }
 
@@ -133,11 +133,11 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			createOption.Metadata.Versions.ClusterStack = "v1"
 			createOption.Metadata.Versions.Components.ClusterAddon = "v1"
 		} else {
-			if err := github.DownloadReleaseAssets(ctx, latestRepoRelease, "./tmp/releases/", gc); err != nil {
+			if err := github.DownloadReleaseAssets(ctx, latestRepoRelease, "./.tmp/release/", gc); err != nil {
 				return nil, fmt.Errorf("failed to download release asset: %w", err)
 			}
 
-			createOption.Metadata, err = clusterstack.HandleStableMode("./tmp/releases/", createOption.CurrentReleaseHash, createOption.LatestReleaseHash)
+			createOption.Metadata, err = clusterstack.HandleStableMode("./.tmp/release/", createOption.CurrentReleaseHash, createOption.LatestReleaseHash)
 			if err != nil {
 				return nil, fmt.Errorf("failed to handle stable mode: %w", err)
 			}
@@ -157,6 +157,8 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 }
 
 func createAction(cmd *cobra.Command, args []string) error {
+	defer cleanTmpDirectory()
+
 	if len(args) != 1 {
 		return fmt.Errorf("please provide a valid command, create only accept one argument to path to the cluster stacks")
 	}
@@ -322,5 +324,13 @@ func overwriteVersionInFile(chartYaml, newVersion string) error {
 	if err != nil {
 		return fmt.Errorf("failed write yaml to file: %w", err)
 	}
+	return nil
+}
+
+func cleanTmpDirectory() error {
+	if err := os.RemoveAll("./.tmp/"); err != nil {
+		return fmt.Errorf("failed to remove tmp directory: %w", err)
+	}
+
 	return nil
 }
