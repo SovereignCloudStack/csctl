@@ -37,6 +37,7 @@ const (
 
 // ReleaseHash contains the information of release hash.
 type ReleaseHash struct {
+	ClusterStack       string `json:"clusterStack"`
 	ClusterAddonDir    string `json:"clusterAddonDir"`
 	ClusterAddonValues string `json:"clusterAddonValues"`
 	NodeImageDir       string `json:"nodeImageDir,omitempty"`
@@ -50,6 +51,16 @@ func GetHash(path string) (ReleaseHash, error) {
 	}
 
 	releaseHash := ReleaseHash{}
+
+	hash, err := dirhash.HashDir(path, "", dirhash.DefaultHash)
+	if err != nil {
+		return ReleaseHash{}, fmt.Errorf("failed to calculate cluster stack hash: %w", err)
+	}
+	hash = clean(hash)
+	fmt.Printf("path %q: cluster stack hash: %q\n", path, hash)
+
+	releaseHash.ClusterStack = hash
+
 	for _, entry := range entries {
 		entryPath := filepath.Join(path, entry.Name())
 		if entry.IsDir() && (entry.Name() == clusterAddonDirName || entry.Name() == nodeImageDirName) {
@@ -57,7 +68,7 @@ func GetHash(path string) (ReleaseHash, error) {
 			if err != nil {
 				return ReleaseHash{}, fmt.Errorf("failed to hash dir: %w", err)
 			}
-			hash = strings.TrimPrefix(hash, "h1:")
+			hash = clean(hash)
 
 			switch entry.Name() {
 			case clusterAddonDirName:
@@ -72,7 +83,7 @@ func GetHash(path string) (ReleaseHash, error) {
 			if _, err := io.Copy(fileHash, file); err != nil {
 				return ReleaseHash{}, fmt.Errorf("failed to copy dir: %w", err)
 			}
-			releaseHash.ClusterAddonValues = base64.StdEncoding.EncodeToString(fileHash.Sum(nil))
+			releaseHash.ClusterAddonValues = clean(base64.StdEncoding.EncodeToString(fileHash.Sum(nil)))
 		}
 	}
 
@@ -88,4 +99,19 @@ func (r ReleaseHash) ValidateWithLatestReleaseHash(latestReleaseHash ReleaseHash
 	}
 
 	return nil
+}
+
+func clean(hash string) string {
+	hash = strings.TrimPrefix(hash, "h1:")
+	hash = strings.ReplaceAll(hash, "/", "")
+	hash = strings.ReplaceAll(hash, "=", "")
+	hash = strings.ReplaceAll(hash, "+", "")
+	hash = strings.ToLower(hash)
+
+	return hash
+}
+
+// GetClusterStackHash returns the 7 character hash of the cluster stack content.
+func (r ReleaseHash) GetClusterStackHash() string {
+	return r.ClusterStack[:7]
 }
