@@ -132,6 +132,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 			createOption.Metadata.Versions.ClusterStack = "v1"
 			createOption.Metadata.Versions.Components.ClusterAddon = "v1"
+			createOption.Metadata.Versions.Components.NodeImage = "v1"
 		} else {
 			if err := github.DownloadReleaseAssets(ctx, latestRepoRelease, "./.tmp/release/", gc); err != nil {
 				return nil, fmt.Errorf("failed to download release asset: %w", err)
