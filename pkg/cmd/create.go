@@ -58,13 +58,14 @@ var (
 
 // CreateOptions contains config for creating a release.
 type CreateOptions struct {
-	ClusterStackPath       string
-	ClusterStackReleaseDir string
-	Config                 clusterstack.CsctlConfig
-	Metadata               clusterstack.MetaData
-	CurrentReleaseHash     hash.ReleaseHash
-	LatestReleaseHash      hash.ReleaseHash
-	NodeImageRegistry      string
+	newClusterStackConvention bool
+	ClusterStackPath          string
+	ClusterStackReleaseDir    string
+	Config                    *clusterstack.CsctlConfig
+	Metadata                  *clusterstack.MetaData
+	CurrentReleaseHash        hash.ReleaseHash
+	LatestReleaseHash         hash.ReleaseHash
+	NodeImageRegistry         string
 }
 
 // createCmd represents the create command.
@@ -95,7 +96,17 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 	createOption.ClusterStackPath = clusterStackPath
 	createOption.Config = config
 
-	_, _, err = providerplugin.GetProviderExecutable(&config)
+	if _, err := os.Stat(filepath.Join(clusterStackPath, "clusteraddon.yaml")); err != nil {
+		// old if clusteraddon.yaml is not present.
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("failed to find clusteraddon.yaml: %w", err)
+		}
+	} else {
+		// new if clusteraddon.yaml is present.
+		createOption.newClusterStackConvention = true
+	}
+
+	_, _, err = providerplugin.GetProviderExecutable(config)
 	if err != nil {
 		return createOption, fmt.Errorf("providerplugin.GetProviderExecutable(&config) failed: %w", err)
 	}
@@ -121,7 +132,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 		// update the metadata kubernetes version with the csctl.yaml config
 		createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 
-		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, &config, gc)
+		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, config, gc)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest release form remote repository: %w", err)
 		}
@@ -144,7 +155,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 		}
 	}
 
-	releaseDirName, err := clusterstack.GetClusterStackReleaseDirectoryName(&createOption.Metadata, &createOption.Config)
+	releaseDirName, err := clusterstack.GetClusterStackReleaseDirectoryName(createOption.Metadata, createOption.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster stack release directory name: %w", err)
 	}
@@ -222,7 +233,7 @@ func (c *CreateOptions) generateRelease() error {
 	}
 
 	// Build all the templated output and put it in a tmp directory
-	if err := template.GenerateOutputFromTemplate(c.ClusterStackPath, "./.tmp/", &c.Metadata); err != nil {
+	if err := template.GenerateOutputFromTemplate(c.ClusterStackPath, "./.tmp/", c.Metadata); err != nil {
 		return fmt.Errorf("failed to generate tmp output: %w", err)
 	}
 
@@ -238,18 +249,30 @@ func (c *CreateOptions) generateRelease() error {
 	}
 
 	// Package Helm from the tmp directory to the release directory
-	if err := template.CreatePackage("./.tmp/", c.ClusterStackReleaseDir); err != nil {
+	if err := template.CreatePackage("./.tmp/", c.ClusterStackReleaseDir, c.newClusterStackConvention, c.Config, c.Metadata); err != nil {
 		return fmt.Errorf("failed to create template package: %w", err)
 	}
 
-	// Copy the cluster-addon-values.yaml config to release if old way
-	clusterAddonData, err := os.ReadFile(filepath.Join(c.ClusterStackPath, "cluster-addon-values.yaml"))
-	if err != nil {
-		return fmt.Errorf("failed to read cluster-addon-values.yaml: %w", err)
-	}
+	if c.newClusterStackConvention {
+		// Copy the clusteraddon.yaml config to release if new way
+		clusterAddonData, err := os.ReadFile(filepath.Join(c.ClusterStackPath, "clusteraddon.yaml"))
+		if err != nil {
+			return fmt.Errorf("failed to read clusteraddon.yaml: %w", err)
+		}
 
-	if err := os.WriteFile(filepath.Join(c.ClusterStackReleaseDir, "cluster-addon-values.yaml"), clusterAddonData, os.FileMode(0o644)); err != nil {
-		return fmt.Errorf("failed to write cluster-addon-values.yaml: %w", err)
+		if err := os.WriteFile(filepath.Join(c.ClusterStackReleaseDir, "clusteraddon.yaml"), clusterAddonData, os.FileMode(0o644)); err != nil {
+			return fmt.Errorf("failed to write clusteraddon.yaml: %w", err)
+		}
+	} else {
+		// Copy the cluster-addon-values.yaml config to release if old way
+		clusterAddonData, err := os.ReadFile(filepath.Join(c.ClusterStackPath, "cluster-addon-values.yaml"))
+		if err != nil {
+			return fmt.Errorf("failed to read cluster-addon-values.yaml: %w", err)
+		}
+
+		if err := os.WriteFile(filepath.Join(c.ClusterStackReleaseDir, "cluster-addon-values.yaml"), clusterAddonData, os.FileMode(0o644)); err != nil {
+			return fmt.Errorf("failed to write cluster-addon-values.yaml: %w", err)
+		}
 	}
 
 	// Put the final metadata file into the output directory.
@@ -268,7 +291,7 @@ func (c *CreateOptions) generateRelease() error {
 		return fmt.Errorf("failed to write metadata: %w", err)
 	}
 
-	err = providerplugin.CreateNodeImages(&c.Config,
+	err = providerplugin.CreateNodeImages(c.Config,
 		c.ClusterStackPath,
 		c.ClusterStackReleaseDir,
 		c.NodeImageRegistry)

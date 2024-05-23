@@ -44,17 +44,17 @@ type MetaData struct {
 }
 
 // ParseMetaData parse the metadata file.
-func ParseMetaData(path string) (MetaData, error) {
+func ParseMetaData(path string) (*MetaData, error) {
 	metadataPath := filepath.Join(path, "metadata.yaml")
 	fileInfo, err := os.ReadFile(filepath.Clean(metadataPath))
 	if err != nil {
-		return MetaData{}, fmt.Errorf("failed to read metadata file: %w", err)
+		return nil, fmt.Errorf("failed to read metadata file: %w", err)
 	}
 
-	metaData := MetaData{}
+	metaData := &MetaData{}
 
 	if err := yaml.Unmarshal(fileInfo, &metaData); err != nil {
-		return MetaData{}, fmt.Errorf("failed to unmarshal metadata yaml: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal metadata yaml: %w", err)
 	}
 
 	return metaData, nil
