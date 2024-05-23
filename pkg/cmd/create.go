@@ -36,6 +36,7 @@ import (
 const (
 	stableMode = "stable"
 	hashMode   = "hash"
+	customMode = "custom"
 )
 
 var (
@@ -51,9 +52,12 @@ var (
 )
 
 var (
-	mode              string
-	outputDirectory   string
-	nodeImageRegistry string
+	mode                string
+	outputDirectory     string
+	nodeImageRegistry   string
+	clusterStackVersion string
+	clusterAddonVersion string
+	nodeImageVersion    string
 )
 
 // CreateOptions contains config for creating a release.
@@ -82,6 +86,9 @@ func init() {
 	createCmd.Flags().StringVarP(&mode, "mode", "m", "stable", "It defines the mode of the cluster stack manager")
 	createCmd.Flags().StringVarP(&outputDirectory, "output", "o", "./.release", "It defines the output directory in which the release artifacts will be generated")
 	createCmd.Flags().StringVarP(&nodeImageRegistry, "node-image-registry", "r", "", "It defines the node image registry. For example oci://ghcr.io/foo/bar/node-images/staging/")
+	createCmd.Flags().StringVar(&clusterStackVersion, "cluster-stack-version", "", "It is used to specify the semver version for the cluster stack in the custom mode")
+	createCmd.Flags().StringVar(&clusterAddonVersion, "cluster-addon-version", "", "It is used to specify the semver version for the cluster addon in the custom mode")
+	createCmd.Flags().StringVar(&nodeImageVersion, "node-image-version", "", "It is used to specify the semver version for the node images in the custom mode")
 }
 
 // GetCreateOptions create a Create Option for create command.
@@ -153,6 +160,21 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 				return nil, fmt.Errorf("failed to handle stable mode: %w", err)
 			}
 		}
+	case customMode:
+		if clusterStackVersion == "" {
+			return nil, fmt.Errorf("please specify a semver for custom version with --cluster-stack-version flag")
+		}
+		if clusterAddonVersion == "" {
+			return nil, fmt.Errorf("please specify a semver for custom version with --cluster-addon-version flag")
+		}
+		if nodeImageVersion == "" {
+			return nil, fmt.Errorf("please specify a semver for custom version with --node-image-version flag")
+		}
+
+		createOption.Metadata, err = clusterstack.HandleCustomMode(createOption.Config.Config.KubernetesVersion, clusterStackVersion, clusterAddonVersion, nodeImageVersion)
+		if err != nil {
+			return nil, fmt.Errorf("failed to handle custom mode: %w", err)
+		}
 	}
 
 	releaseDirName, err := clusterstack.GetClusterStackReleaseDirectoryName(createOption.Metadata, createOption.Config)
@@ -175,9 +197,8 @@ func createAction(cmd *cobra.Command, args []string) error {
 	}
 	clusterStackPath := args[0]
 
-	if mode != stableMode && mode != hashMode {
-		fmt.Println("The mode is ", mode)
-		return fmt.Errorf("mode is not supported please choose from - stable, hash")
+	if mode != stableMode && mode != hashMode && mode != customMode {
+		return fmt.Errorf("mode %q is not supported please choose from - stable, hash or custom", mode)
 	}
 
 	createOpts, err := GetCreateOptions(cmd.Context(), clusterStackPath)

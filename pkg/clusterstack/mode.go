@@ -19,6 +19,7 @@ package clusterstack
 import (
 	"fmt"
 
+	"github.com/SovereignCloudStack/cluster-stack-operator/pkg/version"
 	"github.com/SovereignCloudStack/csctl/pkg/git"
 	"github.com/SovereignCloudStack/csctl/pkg/hash"
 )
@@ -80,6 +81,31 @@ func HandleHashMode(kubernetesVersion string) (*MetaData, error) {
 			Components: Component{
 				ClusterAddon: commitHash,
 				NodeImage:    commitHash,
+			},
+		},
+	}, nil
+}
+
+// HandleCustomMode handles custom mode with version for all components.
+func HandleCustomMode(kubernetesVersion, clusterStackVersion, clusterAddonVersion, nodeImageVersion string) (MetaData, error) {
+	if _, err := version.New(clusterStackVersion); err != nil {
+		return MetaData{}, fmt.Errorf("failed to verify custom version for cluster stack: %q: %w", clusterStackVersion, err)
+	}
+	if _, err := version.New(clusterAddonVersion); err != nil {
+		return MetaData{}, fmt.Errorf("failed to verify custom version for cluster addon: %q: %w", clusterAddonVersion, err)
+	}
+	if _, err := version.New(nodeImageVersion); err != nil {
+		return MetaData{}, fmt.Errorf("failed to verify custom version for node image: %q: %w", nodeImageVersion, err)
+	}
+
+	return MetaData{
+		APIVersion: "metadata.clusterstack.x-k8s.io/v1alpha1",
+		Versions: Versions{
+			Kubernetes:   kubernetesVersion,
+			ClusterStack: clusterStackVersion,
+			Components: Component{
+				ClusterAddon: clusterAddonVersion,
+				NodeImage:    nodeImageVersion,
 			},
 		},
 	}, nil
