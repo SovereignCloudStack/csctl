@@ -32,4 +32,4 @@ jobs:
           file: ./images/builder/Dockerfile
           context: ./images/builder
           push: true
-          tags: ghcr.io/sovereigncloudstack/csctl-builder:0.2.0
+          tags: ghcr.io/sovereigncloudstack/csctl-builder:0.2.1
