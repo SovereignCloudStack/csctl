@@ -34,6 +34,9 @@ jobs:
         shell: bash
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
+      - name: Build the Binary
+        run: make build
+
       - name: Verify Golang Modules
         run: make BUILD_IN_CONTAINER=false generate-modules-ci
 
