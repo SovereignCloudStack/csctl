@@ -126,10 +126,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 
 	switch mode {
 	case hashMode:
-		createOption.Metadata, err = clusterstack.HandleHashMode(config.Config.KubernetesVersion)
-		if err != nil {
-			return nil, fmt.Errorf("failed to handle hash mode: %w", err)
-		}
+		createOption.Metadata = clusterstack.HandleHashMode(createOption.CurrentReleaseHash, config.Config.KubernetesVersion)
 	case stableMode:
 		gc, err := client.NewFactory().NewClient(ctx)
 		if err != nil {
