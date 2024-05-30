@@ -284,7 +284,7 @@ func (c *CreateOptions) generateRelease() error {
 		}
 	} else {
 		// Copy the cluster-addon-values.yaml config to release if old way
-		clusterAddonData, err := os.ReadFile(filepath.Join(c.ClusterStackPath, "cluster-addon-values.yaml"))
+		clusterAddonData, err := os.ReadFile(filepath.Join("./.tmp", "cluster-addon-values.yaml"))
 		if err != nil {
 			return fmt.Errorf("failed to read cluster-addon-values.yaml: %w", err)
 		}
