@@ -7,11 +7,11 @@ require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/spf13/cobra v1.8.0
 	github.com/valyala/fasttemplate v1.2.2
-	golang.org/x/mod v0.16.0
-	golang.org/x/oauth2 v0.18.0
+	golang.org/x/mod v0.18.0
+	golang.org/x/oauth2 v0.21.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.14.4
+	helm.sh/helm/v3 v3.15.2
 )
 
 require (
