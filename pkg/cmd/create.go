@@ -128,6 +128,8 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 	case hashMode:
 		createOption.Metadata = clusterstack.HandleHashMode(createOption.CurrentReleaseHash, config.Config.KubernetesVersion)
 	case stableMode:
+		createOption.Metadata = &clusterstack.MetaData{}
+
 		gc, err := client.NewFactory().NewClient(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create new github client: %w", err)
