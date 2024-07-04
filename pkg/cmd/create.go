@@ -135,9 +135,6 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			return nil, fmt.Errorf("failed to create new github client: %w", err)
 		}
 
-		// update the metadata kubernetes version with the csctl.yaml config
-		createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
-
 		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, config, gc)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest release form remote repository: %w", err)
@@ -159,6 +156,9 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			if err != nil {
 				return nil, fmt.Errorf("failed to handle stable mode: %w", err)
 			}
+
+			// update the metadata kubernetes version with the csctl.yaml config
+			createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 		}
 	case customMode:
 		if clusterStackVersion == "" {
