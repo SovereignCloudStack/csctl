@@ -20,6 +20,7 @@ package hash
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -41,6 +42,21 @@ type ReleaseHash struct {
 	ClusterAddonDir    string `json:"clusterAddonDir"`
 	ClusterAddonValues string `json:"clusterAddonValues"`
 	NodeImageDir       string `json:"nodeImageDir,omitempty"`
+}
+
+// ParseReleaseHash parses the cluster-stack release hash.
+func ParseReleaseHash(path string) (ReleaseHash, error) {
+	latestGitHubReleaseHashData, err := os.ReadFile(filepath.Clean(path))
+	if err != nil {
+		return ReleaseHash{}, fmt.Errorf("failed to read hash: %q: %w", path, err)
+	}
+
+	var releaseHash ReleaseHash
+	if err := json.Unmarshal(latestGitHubReleaseHashData, &releaseHash); err != nil {
+		return ReleaseHash{}, fmt.Errorf("failed to unmarshal json: %q: %w", path, err)
+	}
+
+	return releaseHash, nil
 }
 
 // GetHash returns the release hash.

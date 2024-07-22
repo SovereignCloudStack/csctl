@@ -36,7 +36,7 @@ func DownloadReleaseAssets(ctx context.Context, releaseTag, downloadPath string,
 		return fmt.Errorf("failed to fetch release tag %s with status code %d", releaseTag, resp.StatusCode)
 	}
 
-	assetlist := []string{"metadata.yaml", "cluster-addon-values.yaml", "cluster-addon", "cluster-class"}
+	assetlist := []string{"hashes.json", "metadata.yaml", "cluster-addon-values.yaml", "cluster-addon", "cluster-class"}
 
 	if err := gc.DownloadReleaseAssets(ctx, repoRelease, downloadPath, assetlist); err != nil {
 		// if download failed for some reason, delete the release directory so that it can be retried in the next reconciliation
