@@ -152,6 +152,11 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 				return nil, fmt.Errorf("failed to download release asset: %w", err)
 			}
 
+			createOption.LatestReleaseHash, err = hash.ParseReleaseHash("./.tmp/release/hashes.json")
+			if err != nil {
+				return nil, fmt.Errorf("failed to read hash from the github: %w", err)
+			}
+
 			createOption.Metadata, err = clusterstack.HandleStableMode("./.tmp/release/", createOption.CurrentReleaseHash, createOption.LatestReleaseHash)
 			if err != nil {
 				return nil, fmt.Errorf("failed to handle stable mode: %w", err)
