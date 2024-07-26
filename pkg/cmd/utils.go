@@ -14,35 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package github
+package cmd
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"sort"
+	"strings"
 
 	csoclusterstack "github.com/SovereignCloudStack/cluster-stack-operator/pkg/clusterstack"
 	"github.com/SovereignCloudStack/cluster-stack-operator/pkg/version"
+	"github.com/SovereignCloudStack/csctl/pkg/assetsclient"
 	"github.com/SovereignCloudStack/csctl/pkg/clusterstack"
-	githubclient "github.com/SovereignCloudStack/csctl/pkg/github/client"
 )
 
-// GetLatestReleaseFromRemoteRepository returns the latest release from the github repository.
-func GetLatestReleaseFromRemoteRepository(ctx context.Context, mode string, config *clusterstack.CsctlConfig, gc githubclient.Client) (string, error) {
-	ghReleases, resp, err := gc.ListRelease(ctx)
+// getLatestReleaseFromRemoteRepository returns the latest release from the github repository.
+func getLatestReleaseFromRemoteRepository(ctx context.Context, mode string, config *clusterstack.CsctlConfig, ac assetsclient.Client) (string, error) {
+	ghReleases, err := ac.ListRelease(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to list releases on remote Git repository: %w", err)
-	}
-	if resp != nil && resp.StatusCode != 200 {
-		return "", fmt.Errorf("got unexpected status from call to remote Git repository: %s", resp.Status)
 	}
 
 	var clusterStacks csoclusterstack.ClusterStacks
 
 	for _, ghRelease := range ghReleases {
-		clusterStackObject, matches, err := matchesSpec(ghRelease.GetTagName(), mode, config)
+		clusterStackObject, matches, err := matchesSpec(ghRelease, mode, config)
 		if err != nil {
-			return "", fmt.Errorf("failed to get match release tag %q with spec of ClusterStack: %w", ghRelease.GetTagName(), err)
+			return "", fmt.Errorf("failed to get match release tag %q with spec of ClusterStack: %w", ghRelease, err)
 		}
 
 		if matches {
@@ -75,4 +74,49 @@ func matchesSpec(releaseTagName, mode string, cs *clusterstack.CsctlConfig) (cso
 		csObject.KubernetesVersion.StringWithDot() == kubernetesVersion.StringWithDot() &&
 		csObject.Name == cs.Config.ClusterStackName &&
 		csObject.Provider == cs.Config.Provider.Type, nil
+}
+
+// downloadReleaseAssets downloads the specified release in the specified download path.
+func downloadReleaseAssets(ctx context.Context, releaseTag, downloadPath string, ac assetsclient.Client) error {
+	if err := ac.DownloadReleaseAssets(ctx, releaseTag, downloadPath); err != nil {
+		// if download failed for some reason, delete the release directory so that it can be retried in the next reconciliation
+		if err := os.RemoveAll(downloadPath); err != nil {
+			return fmt.Errorf("failed to remove release: %w", err)
+		}
+		return fmt.Errorf("failed to download release assets: %w", err)
+	}
+
+	return nil
+}
+
+func getMediaType(fileName string) string {
+	if fileName == "clusteraddon.yaml" {
+		return clusterAddonConfigMediaType
+	}
+
+	if fileName == "metadata.yaml" {
+		return metadataMediaType
+	}
+
+	if fileName == "node-images.yaml" {
+		return nodeImageConfigMediaType
+	}
+
+	if fileName == "hashes.json" {
+		return hashesMediaType
+	}
+
+	if strings.Contains(fileName, "cluster-addon") && strings.HasSuffix(fileName, ".tgz") {
+		return clusterAddonMediaType
+	}
+
+	if strings.Contains(fileName, "cluster-class") && strings.HasSuffix(fileName, ".tgz") {
+		return clusterClassMediaType
+	}
+
+	if strings.Contains(fileName, "node-image") && strings.HasSuffix(fileName, ".tgz") {
+		return nodeImageMediaType
+	}
+
+	return ""
 }
