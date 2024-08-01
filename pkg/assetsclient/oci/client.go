@@ -57,6 +57,8 @@ func NewClient() (*Client, error) {
 	client := auth.Client{
 		Credential: auth.StaticCredential(config.registry, auth.Credential{
 			AccessToken: config.accessToken,
+			Username:    config.username,
+			Password:    config.password,
 		}),
 	}
 
@@ -79,6 +81,8 @@ func NewClientForRepository(repo string) (*Client, error) {
 	client := auth.Client{
 		Credential: auth.StaticCredential(config.registry, auth.Credential{
 			AccessToken: config.accessToken,
+			Username:    config.username,
+			Password:    config.password,
 		}),
 	}
 
@@ -101,6 +105,8 @@ func (*factory) NewClient(ctx context.Context) (assetsclient.Client, error) {
 	client := auth.Client{
 		Credential: auth.StaticCredential(config.registry, auth.Credential{
 			AccessToken: config.accessToken,
+			Username:    config.username,
+			Password:    config.password,
 		}),
 	}
 
