@@ -43,4 +43,5 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(publishCmd)
 }
