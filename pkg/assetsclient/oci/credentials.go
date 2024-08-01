@@ -26,12 +26,16 @@ const (
 	envOCIRegistry    = "OCI_REGISTRY"
 	envOCIRepository  = "OCI_REPOSITORY"
 	envOCIAccessToken = "OCI_ACCESS_TOKEN"
+	envOCIUsername    = "OCI_USERNAME"
+	envOCIPassword    = "OCI_PASSWORD"
 )
 
 type ociConfig struct {
 	registry    string
 	repository  string
 	accessToken string
+	username    string
+	password    string
 }
 
 func newOCIConfig() (ociConfig, error) {
@@ -50,12 +54,22 @@ func newOCIConfig() (ociConfig, error) {
 	config.repository = val
 
 	val = os.Getenv(envOCIAccessToken)
-	if val == "" {
-		return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIAccessToken)
-	}
+	if val != "" {
+		base64AccessToken := base64.StdEncoding.EncodeToString([]byte(val))
+		config.accessToken = base64AccessToken
+	} else {
+		val = os.Getenv(envOCIUsername)
+		if val == "" {
+			return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIUsername)
+		}
+		config.username = val
 
-	base64AccessToken := base64.StdEncoding.EncodeToString([]byte(val))
-	config.accessToken = base64AccessToken
+		val = os.Getenv(envOCIPassword)
+		if val == "" {
+			return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIPassword)
+		}
+		config.password = val
+	}
 
 	return config, nil
 }
@@ -70,12 +84,22 @@ func newOCIConfigWithoutRepository() (ociConfig, error) {
 	config.registry = val
 
 	val = os.Getenv(envOCIAccessToken)
-	if val == "" {
-		return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIAccessToken)
-	}
+	if val != "" {
+		base64AccessToken := base64.StdEncoding.EncodeToString([]byte(val))
+		config.accessToken = base64AccessToken
+	} else {
+		val = os.Getenv(envOCIUsername)
+		if val == "" {
+			return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIUsername)
+		}
+		config.username = val
 
-	base64AccessToken := base64.StdEncoding.EncodeToString([]byte(val))
-	config.accessToken = base64AccessToken
+		val = os.Getenv(envOCIPassword)
+		if val == "" {
+			return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIPassword)
+		}
+		config.password = val
+	}
 
 	return config, nil
 }
