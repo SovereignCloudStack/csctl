@@ -1,7 +1,9 @@
+> Obsolete, content moved to overview.md and quickstart.md for use in docs.scs.community
+
 # Using csctl
 
 
-## What does csctl do? 
+## What does csctl do?
 
 As a user, you can create clusters based on Cluster Stacks with the help of the Cluster Stack Operator. The operator needs certain files, e.g. to apply the required Helm charts, and to get the necessary information about the versions in the cluster stack.
 
@@ -9,7 +11,7 @@ In order to not generate these files manually, this CLI tool takes a certain pre
 
 Therefore, this tool can be used to configure Cluster Stacks and to test them with the Cluster Stack Operator. It can also be used to release stable releases of Cluster Stacks that can be published for a broader community.
 
-## Different modes of csctl 
+## Different modes of csctl
 
 The csctl has multiple modes that can be used for different use cases.
 
@@ -51,7 +53,7 @@ commit: f252304eb013014b35f8a91abf1f61aff2062601
 If you don't see a version there, then something has gone wrong. Re-check above steps and open an issue if it still does not work!
 
 
-If you're using `gh` CLI then you can also use the following to download it. 
+If you're using `gh` CLI then you can also use the following to download it.
 ```bash
 $ gh release download -p csctl_0.0.2_linux_amd64 -R SovereignCloudStack/csctl
 ```
@@ -61,10 +63,10 @@ $ gh release download -p csctl_0.0.2_linux_amd64 -R SovereignCloudStack/csctl
 The most important subcommand is `create`. This command takes a path to the directory where you configured your Cluster Stack and generates the necessary files in the output directory via the `--output` flag:
 
 ```bash
-$ csctl create <path-to-cluster-stack-configuration-directory> --output <path-to-output-directory> 
+$ csctl create <path-to-cluster-stack-configuration-directory> --output <path-to-output-directory>
 ```
 
-You can specify your node image registry with the flag `--node-image-registry`. The plugin of your provider will update the node images in the respective container registry. 
+You can specify your node image registry with the flag `--node-image-registry`. The plugin of your provider will update the node images in the respective container registry.
 
 You can use the `--mode` flag to specify the mode you want to use.
 
