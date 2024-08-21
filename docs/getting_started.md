@@ -37,17 +37,3 @@ The apiVersion specifies the version of this configuration. Currently, there is 
 Furthermore, the Kubernetes version in the format 'v<major>.<minor>.<patch>' (e.g. 1.27.5) has to be specified as well as the name that should be given to the Cluster Stack.
 
 Depending on your plugin, there might be a provider-specific configuration.
-
-
-## Templating the versions
-
-There are three different versions in a Cluster Stack that can be templated by `csctl`:
-
-```markdown
-- << .ClusterAddonVersion >>
-- << .ClusterClassVersion >>
-- << .NodeImageVersion >>
-```
-If you want to specify one of these versions in your Helm chart or other configuration files, then use the one of the above mentioned templated versions.
-
-To reference your node images, you will also need '<< .NodeImageRegistry >>'.
