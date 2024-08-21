@@ -1,4 +1,4 @@
-# Configuring a Cluster Stack
+# Getting started
 
 A [Cluster Stack](https://github.com/SovereignCloudStack/cluster-stacks) is full template of a Kubernetes cluster. A Cluster Stack can be configured on every provider that supports Cluster API.
 
