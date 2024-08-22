@@ -34,6 +34,6 @@ config:
 
 The apiVersion specifies the version of this configuration. Currently, there is only the version `csctl.clusterstack.x-k8s.io/v1alpha1`.
 
-Furthermore, the Kubernetes version in the format 'v<major>.<minor>.<patch>' (e.g. 1.27.5) has to be specified as well as the name that should be given to the Cluster Stack.
+Furthermore, the Kubernetes version in the format `v<major>.<minor>.<patch>` (e.g. 1.27.5) has to be specified as well as the name that should be given to the Cluster Stack.
 
 Depending on your plugin, there might be a provider-specific configuration.
