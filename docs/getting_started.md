@@ -1,8 +1,8 @@
-# Configuring a Cluster Stack
+# Getting started
 
 A [Cluster Stack](https://github.com/SovereignCloudStack/cluster-stacks) is full template of a Kubernetes cluster. A Cluster Stack can be configured on every provider that supports Cluster API.
 
-The Cluster Stack Operator facilitates using Cluster Stacks by automating all steps that users would have to do manually given they have a Cluster API management cluster. 
+The Cluster Stack Operator facilitates using Cluster Stacks by automating all steps that users would have to do manually given they have a Cluster API management cluster.
 
 The csctl helps to generate all files and build node images based on provided scripts in a format that the Cluster Stack Operator can use.
 
@@ -18,7 +18,7 @@ You should must have the following content inside your directory:
 - node-image directory (optional): the directory containing config and associated scripts to build node images
 
 
-## Configuring csctl 
+## Configuring csctl
 The configuration of csctl has to be specified in the `csctl.yaml`. It needs to follow this structure:
 
 ```yaml
@@ -32,22 +32,8 @@ config:
     config:
 ```
 
-The apiVersion specifies the version of this configuration. Currently, there is only the version `csctl.clusterstack.x-k8s.io/v1alpha1`. 
+The apiVersion specifies the version of this configuration. Currently, there is only the version `csctl.clusterstack.x-k8s.io/v1alpha1`.
 
-Furthermore, the Kubernetes version in the format "v<major>.<minor>.<patch>" (e.g. 1.27.5) has to be specified as well as the name that should be given to the Cluster Stack.
+Furthermore, the Kubernetes version in the format 'v<major>.<minor>.<patch>' (e.g. 1.27.5) has to be specified as well as the name that should be given to the Cluster Stack.
 
 Depending on your plugin, there might be a provider-specific configuration.
-
-
-## Templating the versions
-
-There are three different versions in a Cluster Stack that can be templated by `csctl`: 
-
-```markdown
-- << .ClusterAddonVersion >>
-- << .ClusterClassVersion >>
-- << .NodeImageVersion >>
-```
-If you want to specify one of these versions in your Helm chart or other configuration files, then use the one of the above mentioned templated versions.
-
-To reference your node images, you will also need << .NodeImageRegistry >>.
