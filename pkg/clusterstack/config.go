@@ -131,3 +131,15 @@ func GetClusterStackReleaseDirectoryName(metadata *MetaData, config *CsctlConfig
 
 	return clusterStackReleaseDirName, nil
 }
+
+// GetClusterStackReleaseName return the cluster stack release name.
+// e.g. - docker-ferrol-1-27-v0-sha.uxumi7s .
+func GetClusterStackReleaseName(metada *MetaData, config *CsctlConfig) (string, error) {
+	kubernetesVerion, err := config.ParseKubernetesVersion()
+	if err != nil {
+		return "", fmt.Errorf("failed to parse kubernetes version: %w", err)
+	}
+
+	clusterStackReleaseName := fmt.Sprintf("%s-%s-%s-%s", config.Config.Provider.Type, config.Config.ClusterStackName, kubernetesVerion.String(), metada.Versions.ClusterStack)
+	return clusterStackReleaseName, nil
+}

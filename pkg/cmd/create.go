@@ -23,9 +23,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/SovereignCloudStack/csctl/pkg/assetsclient/github"
 	"github.com/SovereignCloudStack/csctl/pkg/clusterstack"
-	"github.com/SovereignCloudStack/csctl/pkg/github"
-	"github.com/SovereignCloudStack/csctl/pkg/github/client"
 	"github.com/SovereignCloudStack/csctl/pkg/hash"
 	"github.com/SovereignCloudStack/csctl/pkg/providerplugin"
 	"github.com/SovereignCloudStack/csctl/pkg/template"
@@ -130,12 +129,12 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 	case stableMode:
 		createOption.Metadata = &clusterstack.MetaData{}
 
-		gc, err := client.NewFactory().NewClient(ctx)
+		gc, err := github.NewFactory().NewClient(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create new github client: %w", err)
 		}
 
-		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, config, gc)
+		latestRepoRelease, err := getLatestReleaseFromRemoteRepository(ctx, mode, config, gc)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest release form remote repository: %w", err)
 		}
@@ -148,7 +147,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			createOption.Metadata.Versions.Components.ClusterAddon = "v1"
 			createOption.Metadata.Versions.Components.NodeImage = "v1"
 		} else {
-			if err := github.DownloadReleaseAssets(ctx, latestRepoRelease, "./.tmp/release/", gc); err != nil {
+			if err := downloadReleaseAssets(ctx, latestRepoRelease, "./.tmp/release/", gc); err != nil {
 				return nil, fmt.Errorf("failed to download release asset: %w", err)
 			}
 
