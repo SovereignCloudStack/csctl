@@ -16,7 +16,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout repository
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -45,7 +45,7 @@ jobs:
           app_id: ${{ secrets.SCS_APP_ID }}
           private_key: ${{ secrets.SCS_APP_PRIVATE_KEY }}
       - name: Generate Size
-        uses: pascalgn/size-label-action@bbbaa0d5ccce8e2e76254560df5c64b82dac2e12 # v0.5.2
+        uses: pascalgn/size-label-action@be08a2d5f857dc99c5b9426cdb5a8ea1aa7f0399 # v0.5.4
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
         with:
