@@ -2,7 +2,7 @@
 
 ## Build your own Cluster Stack
 
-Using csctl to build a Cluster Stack requires a certain directory structure. See [here](./preparing_your_clusterstack_directory.md) for more details. 
+Using csctl to build a Cluster Stack requires a certain directory structure. See [here](./getting_started.md) for more details.
 
 ## Building your own plugin
 
