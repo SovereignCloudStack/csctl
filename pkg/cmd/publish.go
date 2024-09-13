@@ -177,7 +177,7 @@ func GetPublishOptions(ctx context.Context, clusterStackPath string) (*PublishOp
 		return nil, fmt.Errorf("failed to get cluster stack release directory name: %w", err)
 	}
 
-	publishOption.releaseName, err = clusterstack.GetClusterStackReleaseName(publishOption.Metadata, publishOption.Config)
+	publishOption.releaseName, err = clusterstack.GetClusterStackReleaseDirectoryName(publishOption.Metadata, publishOption.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster stack release name: %w", err)
 	}
