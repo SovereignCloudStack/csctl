@@ -347,6 +347,16 @@ func (p *PublishOptions) generateRelease(ctx context.Context) error {
 func pushReleaseAssets(ctx context.Context, pusher assetsclient.Pusher, clusterStackReleasePath, releaseName string, annotations map[string]string) error {
 	releaseAssets := []assetsclient.ReleaseAsset{}
 
+	ociclient, err := oci.NewClient()
+	if err != nil {
+		return fmt.Errorf("error creating oci client: %w", err)
+	}
+
+	if ociclient.FoundRelease(ctx, releaseName) {
+		fmt.Printf("release tag \"%s\" found in oci registry. aborting push\n", releaseName)
+		return nil
+	}
+
 	files, err := os.ReadDir(clusterStackReleasePath)
 	if err != nil {
 		return fmt.Errorf("failed to read directory %s: %w", clusterStackReleasePath, err)
@@ -363,11 +373,6 @@ func pushReleaseAssets(ctx context.Context, pusher assetsclient.Pusher, clusterS
 
 	if err := pusher.PushReleaseAssets(ctx, releaseAssets, releaseName, clusterStackReleasePath, clusterStackArtifactType, annotations); err != nil {
 		return fmt.Errorf("failed to push release assets to oci registry: %w", err)
-	}
-
-	ociclient, err := oci.NewClient()
-	if err != nil {
-		return fmt.Errorf("error creating oci client: %w", err)
 	}
 
 	fmt.Printf("successfully pushed clusterstack release: %s:%s \n", ociclient.Repository.Reference.String(), releaseName)
