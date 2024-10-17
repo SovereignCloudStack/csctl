@@ -234,18 +234,14 @@ func createAction(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate if there any change or not
-	//if err := createOpts.validateHash(); err != nil {
-	//	return fmt.Errorf("failed to validate with latest release hash: %w", err)
-	//}
+	if err := createOpts.validateHash(); err != nil {
+		return fmt.Errorf("failed to validate with latest release hash: %w", err)
+	}
 
 	if err := createOpts.generateRelease(cmd.Context()); err != nil {
 		return fmt.Errorf("failed to generate release: %w", err)
 	}
 	fmt.Printf("Created %s\n", createOpts.ClusterStackReleaseDir)
-
-	if publish && remote == "oci" {
-		fmt.Println("Push?")
-	}
 
 	return nil
 }
