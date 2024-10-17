@@ -60,6 +60,7 @@ var (
 	clusterAddonVersion string
 	nodeImageVersion    string
 	remote              string
+	publish             bool
 )
 
 // CreateOptions contains config for creating a release.
@@ -72,6 +73,7 @@ type CreateOptions struct {
 	CurrentReleaseHash        hash.ReleaseHash
 	LatestReleaseHash         hash.ReleaseHash
 	NodeImageRegistry         string
+	releaseName               string
 }
 
 // createCmd represents the create command.
@@ -92,6 +94,7 @@ func init() {
 	createCmd.Flags().StringVar(&clusterAddonVersion, "cluster-addon-version", "", "It is used to specify the semver version for the cluster addon in the custom mode")
 	createCmd.Flags().StringVar(&nodeImageVersion, "node-image-version", "", "It is used to specify the semver version for the node images in the custom mode")
 	createCmd.Flags().StringVar(&remote, "remote", "github", "Which remote repository to use and thus which credentials are required. Currently supported are 'github' and 'oci'.")
+	createCmd.Flags().BoolVar(&publish, "publish", false, "Publish release after creation is done. This is only implemented for OCI currently.")
 }
 
 // GetCreateOptions create a Create Option for create command.
@@ -135,6 +138,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 
 		var remoteFactory assetsclient.Factory
 
+		// using switch here in case more will be added in the future (aws?)
 		switch remote {
 		case "github":
 			remoteFactory = github.NewFactory()
@@ -198,6 +202,12 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster stack release directory name: %w", err)
 	}
+
+	createOption.releaseName, err = clusterstack.GetClusterStackReleaseDirectoryName(createOption.Metadata, createOption.Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster stack release name: %w", err)
+	}
+
 	// Release directory name `release/docker-ferrol-1-27-v1`
 	createOption.ClusterStackReleaseDir = filepath.Join(outputDirectory, releaseDirName)
 
@@ -224,14 +234,18 @@ func createAction(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate if there any change or not
-	if err := createOpts.validateHash(); err != nil {
-		return fmt.Errorf("failed to validate with latest release hash: %w", err)
-	}
+	//if err := createOpts.validateHash(); err != nil {
+	//	return fmt.Errorf("failed to validate with latest release hash: %w", err)
+	//}
 
-	if err := createOpts.generateRelease(); err != nil {
+	if err := createOpts.generateRelease(cmd.Context()); err != nil {
 		return fmt.Errorf("failed to generate release: %w", err)
 	}
 	fmt.Printf("Created %s\n", createOpts.ClusterStackReleaseDir)
+
+	if publish && remote == "oci" {
+		fmt.Println("Push?")
+	}
 
 	return nil
 }
@@ -247,7 +261,7 @@ func (c *CreateOptions) validateHash() error {
 	return nil
 }
 
-func (c *CreateOptions) generateRelease() error {
+func (c *CreateOptions) generateRelease(ctx context.Context) error {
 	if err := os.MkdirAll(c.ClusterStackReleaseDir, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
@@ -336,6 +350,28 @@ func (c *CreateOptions) generateRelease() error {
 	if err != nil {
 		return fmt.Errorf("providerplugin.CreateNodeImages() failed: %w", err)
 	}
+
+	if publish && remote == "oci" {
+		ociClient, err := oci.NewClient()
+		if err != nil {
+			return fmt.Errorf("failed to create new oci client: %w", err)
+		}
+
+		var hashAnnotation string
+		if len(c.CurrentReleaseHash.ClusterStack) >= 7 {
+			hashAnnotation = c.CurrentReleaseHash.ClusterStack[:7]
+		}
+
+		annotations := map[string]string{
+			"kubernetesVersion": c.Metadata.Versions.Kubernetes,
+			"hash":              hashAnnotation,
+		}
+
+		if err := pushReleaseAssets(ctx, ociClient, c.ClusterStackReleaseDir, c.releaseName, annotations); err != nil {
+			return fmt.Errorf("failed to push release assets to the oci registry: %w", err)
+		}
+	}
+
 	return nil
 }
 
