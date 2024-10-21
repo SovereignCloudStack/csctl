@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"github.com/SovereignCloudStack/cluster-stack-operator/pkg/version"
-	"github.com/SovereignCloudStack/csctl/pkg/git"
 	"github.com/SovereignCloudStack/csctl/pkg/hash"
 )
 
@@ -35,7 +34,6 @@ func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleas
 	if err != nil {
 		return nil, fmt.Errorf("failed to bump cluster stack: %w", err)
 	}
-	fmt.Printf("Bumped ClusterStack Version: %s\n", metadata.Versions.ClusterStack)
 
 	if currentReleaseHash.ClusterAddonDir != latestReleaseHash.ClusterAddonDir || currentReleaseHash.ClusterAddonValues != latestReleaseHash.ClusterAddonValues {
 		metadata.Versions.Components.ClusterAddon, err = BumpVersion(metadata.Versions.Components.ClusterAddon)
@@ -64,26 +62,22 @@ func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleas
 	return metadata, nil
 }
 
-// HandleHashMode returns metadata of Hash mode.
-func HandleHashMode(kubernetesVersion string) (*MetaData, error) {
-	commitHash, err := git.GetLatestGitCommit("./")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get latest commit hash: %w", err)
-	}
-
-	commitHash = fmt.Sprintf("v0-sha.%s", commitHash)
+// HandleHashMode handles the hash mode with the cluster stack hash.
+func HandleHashMode(currentRelease hash.ReleaseHash, kubernetesVersion string) *MetaData {
+	clusterStackHash := currentRelease.GetClusterStackHash()
+	clusterStackHash = fmt.Sprintf("v0-sha.%s", clusterStackHash)
 
 	return &MetaData{
 		APIVersion: "metadata.clusterstack.x-k8s.io/v1alpha1",
 		Versions: Versions{
 			Kubernetes:   kubernetesVersion,
-			ClusterStack: commitHash,
+			ClusterStack: clusterStackHash,
 			Components: Component{
-				ClusterAddon: commitHash,
-				NodeImage:    commitHash,
+				ClusterAddon: clusterStackHash,
+				NodeImage:    clusterStackHash,
 			},
 		},
-	}, nil
+	}
 }
 
 // HandleCustomMode handles custom mode with version for all components.

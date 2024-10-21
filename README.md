@@ -4,9 +4,30 @@
 
 - [CSCTL](#csctl)
   - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
   - [Introduction](#introduction)
   - [Features of csctl](#features-of-csctl)
   - [Docs](#docs)
+
+## Installation
+To download `csctl` there are two ways. 
+Go to https://github.com/SovereignCloudStack/csctl/releases/latest and then click on the binary. The name of the binary looks similar to this `
+csctl_0.0.2_linux_amd64` for Linux amd64 architecture.
+
+This will download the binary in your `~/Downloads` directory. Use the following commands to move it to your PATH. 
+```bash
+chmod u+x ~/Downloads/csctl_0.0.2_linux_amd64
+sudo mv ~/Downloads/csctl_0.0.2_linux_amd64 /usr/local/bin/csctl
+```
+
+Alternative way of installing the binary is to use `[gh](https://github.com/cli/cli)` command line tool.
+Use the following command to download the latest binary from GitHub. 
+```bash
+gh release download -p 'csctl_*_linux_amd64' -R SovereignCloudStack/csctl
+chmod u+x csctl_0.0.2_linux_amd64
+sudo mv ./csctl_0.0.2_linux_amd64 /usr/local/bin/csctl
+```
+For darwin based systems, the steps are similar, you'll have to choose darwin based binaries instead of linux one mentioned above. You'll also need to update your destination directory.
 
 ## Introduction
 

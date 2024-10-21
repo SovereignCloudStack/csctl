@@ -23,9 +23,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/SovereignCloudStack/csctl/pkg/assetsclient/github"
 	"github.com/SovereignCloudStack/csctl/pkg/clusterstack"
-	"github.com/SovereignCloudStack/csctl/pkg/github"
-	"github.com/SovereignCloudStack/csctl/pkg/github/client"
 	"github.com/SovereignCloudStack/csctl/pkg/hash"
 	"github.com/SovereignCloudStack/csctl/pkg/providerplugin"
 	"github.com/SovereignCloudStack/csctl/pkg/template"
@@ -126,20 +125,16 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 
 	switch mode {
 	case hashMode:
-		createOption.Metadata, err = clusterstack.HandleHashMode(config.Config.KubernetesVersion)
-		if err != nil {
-			return nil, fmt.Errorf("failed to handle hash mode: %w", err)
-		}
+		createOption.Metadata = clusterstack.HandleHashMode(createOption.CurrentReleaseHash, config.Config.KubernetesVersion)
 	case stableMode:
-		gc, err := client.NewFactory().NewClient(ctx)
+		createOption.Metadata = &clusterstack.MetaData{}
+
+		gc, err := github.NewFactory().NewClient(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create new github client: %w", err)
 		}
 
-		// update the metadata kubernetes version with the csctl.yaml config
-		createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
-
-		latestRepoRelease, err := github.GetLatestReleaseFromRemoteRepository(ctx, mode, config, gc)
+		latestRepoRelease, err := getLatestReleaseFromRemoteRepository(ctx, mode, config, gc)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest release form remote repository: %w", err)
 		}
@@ -150,15 +145,24 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 			createOption.Metadata.Versions.ClusterStack = "v1"
 			createOption.Metadata.Versions.Components.ClusterAddon = "v1"
+			createOption.Metadata.Versions.Components.NodeImage = "v1"
 		} else {
-			if err := github.DownloadReleaseAssets(ctx, latestRepoRelease, "./.tmp/release/", gc); err != nil {
+			if err := downloadReleaseAssets(ctx, latestRepoRelease, "./.tmp/release/", gc); err != nil {
 				return nil, fmt.Errorf("failed to download release asset: %w", err)
+			}
+
+			createOption.LatestReleaseHash, err = hash.ParseReleaseHash("./.tmp/release/hashes.json")
+			if err != nil {
+				return nil, fmt.Errorf("failed to read hash from the github: %w", err)
 			}
 
 			createOption.Metadata, err = clusterstack.HandleStableMode("./.tmp/release/", createOption.CurrentReleaseHash, createOption.LatestReleaseHash)
 			if err != nil {
 				return nil, fmt.Errorf("failed to handle stable mode: %w", err)
 			}
+
+			// update the metadata kubernetes version with the csctl.yaml config
+			createOption.Metadata.Versions.Kubernetes = config.Config.KubernetesVersion
 		}
 	case customMode:
 		if clusterStackVersion == "" {
@@ -286,7 +290,7 @@ func (c *CreateOptions) generateRelease() error {
 		}
 	} else {
 		// Copy the cluster-addon-values.yaml config to release if old way
-		clusterAddonData, err := os.ReadFile(filepath.Join(c.ClusterStackPath, "cluster-addon-values.yaml"))
+		clusterAddonData, err := os.ReadFile(filepath.Join(".tmp", "cluster-addon-values.yaml"))
 		if err != nil {
 			return fmt.Errorf("failed to read cluster-addon-values.yaml: %w", err)
 		}

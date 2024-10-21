@@ -14,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package client implements important functions for github client.
-package client
+package github
 
 import (
 	"fmt"
