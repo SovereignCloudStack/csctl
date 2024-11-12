@@ -3,10 +3,10 @@ module github.com/SovereignCloudStack/csctl
 go 1.21
 
 require (
-	github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.5
+	github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.7
 	github.com/google/go-github/v56 v56.0.0
 	github.com/opencontainers/image-spec v1.1.0
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/valyala/fasttemplate v1.2.2
 	golang.org/x/mod v0.16.0
 	golang.org/x/oauth2 v0.18.0
