@@ -77,3 +77,30 @@ $ csctl create <path-to-cluster-stack-directory> --output <path-to-output-direct
 ```
 
 You have to be authenticated to your cloud provider and container registry to which you want to upload the node images.
+
+### Publish Cluster Stacks on OCI Registry
+
+`csctl` can create and publish Cluster Stack releases directly to an OCI registry.
+
+To authenticate with an OCI registry the variables `OCI_REGISTRY`,
+`OCI_REPOSITORY`, `OCI_USERNAME` and `OCI_PASSWORD` are needed. If a registry
+with access token support is used `OCI_ACCESS_TOKEN` can be used alternatively
+to username/password.
+`OCI_REPOSITORY` needs to include the registry URL.
+
+Example:
+
+```sh
+export OCI_REGISTRY=registry.scs.community
+export OCI_REPOSITORY=$OCI_REGISTRY/csctl-oci/openstack
+export OCI_USERNAME=<myusername>
+export OCI_PASSWORD=<mypassword>
+```
+
+When set add parameters `--publish` and `--remote oci` to `csctl create command`:
+
+```bash
+$ csctl create --publish --remote oci <path-to-cluster-stack-directory> \
+--output <path-to-output-directory> \
+--mode hash --node-image-registry <url-of-registry>
+```
