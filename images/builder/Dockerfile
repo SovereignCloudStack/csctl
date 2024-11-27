@@ -22,10 +22,10 @@ FROM docker.io/library/alpine:3.20.0@sha256:216266c86fc4dcef5619930bd394245824c2
 ENV LYCHEE_VERSION="v0.15.1"
 # hadolint ignore=DL3018
 RUN apk add --no-cache curl && \
-    curl -L -o /tmp/lychee-${LYCHEE_VERSION}.tgz https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz && \
-    tar -xz -C /tmp -f /tmp/lychee-${LYCHEE_VERSION}.tgz && \
-    mv /tmp/lychee /usr/bin/lychee && \
-    rm -rf /tmp/linux-amd64 /tmp/lychee-${LYCHEE_VERSION}.tgz
+  curl -L -o /tmp/lychee-${LYCHEE_VERSION}.tgz https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz && \
+  tar -xz -C /tmp -f /tmp/lychee-${LYCHEE_VERSION}.tgz && \
+  mv /tmp/lychee /usr/bin/lychee && \
+  rm -rf /tmp/linux-amd64 /tmp/lychee-${LYCHEE_VERSION}.tgz
 
 # Install Golang CI Lint
 FROM docker.io/library/alpine:3.20.0@sha256:216266c86fc4dcef5619930bd394245824c2af52fd21ba7c6fa0e618657d4c3b as golangci
@@ -34,7 +34,7 @@ ENV GOLANGCI_VERSION="v1.58.2"
 WORKDIR /
 # hadolint ignore=DL3018,DL4006
 RUN apk add --no-cache curl && \
-    curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_VERSION}
+  curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_VERSION}
 
 # Install Hadolint
 FROM docker.io/hadolint/hadolint:v2.12.0-alpine@sha256:7dba9a9f1a0350f6d021fb2f6f88900998a4fb0aaf8e4330aa8c38544f04db42 as hadolint
@@ -45,7 +45,7 @@ FROM docker.io/aquasec/trivy:0.51.3@sha256:9e99f83e58db3f9338ded0bb25179e1d5849a
 ############################
 # csctl Build Image Base #
 ############################
-FROM docker.io/library/golang:1.22-bullseye
+FROM docker.io/library/golang:1.23.3-bullseye
 
 # update: datasource=repology depName=debian_11/skopeo versioning=loose
 ENV SKOPEO_VERSION="1.2.2+dfsg1-1+b6"
@@ -56,16 +56,16 @@ ENV YAMLFIXER_VERSION="0.9.15"
 
 # hadolint ignore=DL3008
 RUN apt-get update && \
-    apt-get install -qy --no-install-recommends \
-    gnupg python3 python3-pip \
-    file zip unzip jq gettext \
-    skopeo=${SKOPEO_VERSION} \
-    protobuf-compiler libprotobuf-dev \
-    libsystemd-dev jq && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    pip install --no-cache-dir \
-    yamllint==${YAMLLINT_VERSION} \
-    yamlfixer-opt-nc==${YAMLFIXER_VERSION}
+  apt-get install -qy --no-install-recommends \
+  gnupg python3 python3-pip \
+  file zip unzip jq gettext \
+  skopeo=${SKOPEO_VERSION} \
+  protobuf-compiler libprotobuf-dev \
+  libsystemd-dev jq && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+  pip install --no-cache-dir \
+  yamllint==${YAMLLINT_VERSION} \
+  yamlfixer-opt-nc==${YAMLFIXER_VERSION}
 
 COPY --from=lychee /usr/bin/lychee /usr/bin/lychee
 COPY --from=golangci /bin/golangci-lint /usr/local/bin
