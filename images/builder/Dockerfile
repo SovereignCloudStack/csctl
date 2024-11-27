@@ -45,7 +45,7 @@ FROM docker.io/aquasec/trivy:0.51.3@sha256:9e99f83e58db3f9338ded0bb25179e1d5849a
 ############################
 # csctl Build Image Base #
 ############################
-FROM docker.io/library/golang:1.21.6-bullseye@sha256:a8712f27d9ac742e7bded8f81f7547c5635e855e8b80302e8fc0ce424f559295
+FROM docker.io/library/golang:1.23.3-bookworm
 
 # update: datasource=repology depName=debian_11/skopeo versioning=loose
 ENV SKOPEO_VERSION="1.2.2+dfsg1-1+b6"
