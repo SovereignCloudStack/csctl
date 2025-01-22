@@ -53,23 +53,23 @@ func newOCIConfig() (ociConfig, error) {
 	}
 	config.repository = val
 
-	val = os.Getenv(envOCIAccessToken)
-	if val != "" {
-		base64AccessToken := base64.StdEncoding.EncodeToString([]byte(val))
-		config.accessToken = base64AccessToken
-	} else {
-		val = os.Getenv(envOCIUsername)
-		if val == "" {
-			return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIUsername)
-		}
-		config.username = val
+	//val = os.Getenv(envOCIAccessToken)
+	//if val != "" {
+	//	base64AccessToken := base64.StdEncoding.EncodeToString([]byte(val))
+	//	config.accessToken = base64AccessToken
+	//} else {
+	//	val = os.Getenv(envOCIUsername)
+	//	if val == "" {
+	//		return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIUsername)
+	//	}
+	//	config.username = val
 
-		val = os.Getenv(envOCIPassword)
-		if val == "" {
-			return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIPassword)
-		}
-		config.password = val
-	}
+	//	val = os.Getenv(envOCIPassword)
+	//	if val == "" {
+	//		return ociConfig{}, fmt.Errorf("environment variable %s is not set", envOCIPassword)
+	//	}
+	//	config.password = val
+	//}
 
 	return config, nil
 }
