@@ -260,7 +260,7 @@ func (c *CreateOptions) validateHash() error {
 }
 
 func (c *CreateOptions) generateRelease(ctx context.Context) error {
-	if err := os.MkdirAll(c.ClusterStackReleaseDir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(c.ClusterStackReleaseDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 	fmt.Printf("Creating output in %s\n", c.ClusterStackReleaseDir)
