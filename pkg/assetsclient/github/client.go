@@ -78,7 +78,7 @@ func (c *realGhClient) ListRelease(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("failed to list releases: %w", err)
 	}
 
-	if response != nil && response.StatusCode != 200 {
+	if response != nil && response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("got unexpected status from call to remote repository: %s", response.Status)
 	}
 
@@ -111,7 +111,7 @@ func (c *realGhClient) DownloadReleaseAssets(ctx context.Context, tag, path stri
 		return fmt.Errorf("failed to fetch release tag %s with status code %d: %w", tag, response.StatusCode, err)
 	}
 
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+	if err := os.MkdirAll(path, 0o750); err != nil {
 		return fmt.Errorf("failed to create destination directory: %w", err)
 	}
 	// Extract the release assets
