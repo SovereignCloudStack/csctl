@@ -19,7 +19,7 @@ jobs:
     if: github.event_name != 'pull_request_target' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sovereigncloudstack/csctl-builder:0.2.1
+      image: ghcr.io/sovereigncloudstack/csctl-builder:0.2.2
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
