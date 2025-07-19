@@ -1,8 +1,8 @@
 module github.com/SovereignCloudStack/csctl
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.9
+toolchain go1.23.11
 
 require (
 	github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.5
@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/valyala/fasttemplate v1.2.2
 	golang.org/x/mod v0.22.0
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.27.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.16.3
