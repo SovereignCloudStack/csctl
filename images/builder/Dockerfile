@@ -22,10 +22,10 @@ FROM docker.io/library/alpine:3.21.3@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa46
 ENV LYCHEE_VERSION="v0.15.1"
 # hadolint ignore=DL3018
 RUN apk add --no-cache curl && \
-    curl -L -o /tmp/lychee-${LYCHEE_VERSION}.tgz https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz && \
-    tar -xz -C /tmp -f /tmp/lychee-${LYCHEE_VERSION}.tgz && \
-    mv /tmp/lychee /usr/bin/lychee && \
-    rm -rf /tmp/linux-amd64 /tmp/lychee-${LYCHEE_VERSION}.tgz
+  curl -L -o /tmp/lychee-${LYCHEE_VERSION}.tgz https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz && \
+  tar -xz -C /tmp -f /tmp/lychee-${LYCHEE_VERSION}.tgz && \
+  mv /tmp/lychee /usr/bin/lychee && \
+  rm -rf /tmp/linux-amd64 /tmp/lychee-${LYCHEE_VERSION}.tgz
 
 # Install Golang CI Lint
 FROM docker.io/library/alpine:3.21.3@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c as golangci
@@ -34,7 +34,7 @@ ENV GOLANGCI_VERSION="v1.64.5"
 WORKDIR /
 # hadolint ignore=DL3018,DL4006
 RUN apk add --no-cache curl && \
-    curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_VERSION}
+  curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_VERSION}
 
 # Install Hadolint
 FROM docker.io/hadolint/hadolint:v2.12.0-alpine@sha256:3c206a451cec6d486367e758645269fd7d696c5ccb6ff59d8b03b0e45268a199 as hadolint
@@ -45,7 +45,7 @@ FROM docker.io/aquasec/trivy:0.59.1@sha256:029e990b328d149bf0a9ffe355919041e1f86
 ############################
 # csctl Build Image Base #
 ############################
-FROM docker.io/library/golang:1.21.6-bullseye@sha256:c62751ac12cad0c514d941e36f846c1c440ca9e8ec08dd87d022fb03f0887a9b
+FROM docker.io/library/golang:1.22-bullseye
 
 # update: datasource=repology depName=debian_11/skopeo versioning=loose
 ENV SKOPEO_VERSION="1.2.2+dfsg1-1+b6"
@@ -56,16 +56,16 @@ ENV YAMLFIXER_VERSION="0.9.15"
 
 # hadolint ignore=DL3008
 RUN apt-get update && \
-    apt-get install -qy --no-install-recommends \
-    gnupg python3 python3-pip \
-    file zip unzip jq gettext \
-    skopeo=${SKOPEO_VERSION} \
-    protobuf-compiler libprotobuf-dev \
-    libsystemd-dev jq && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    pip install --no-cache-dir \
-    yamllint==${YAMLLINT_VERSION} \
-    yamlfixer-opt-nc==${YAMLFIXER_VERSION}
+  apt-get install -qy --no-install-recommends \
+  gnupg python3 python3-pip \
+  file zip unzip jq gettext \
+  skopeo=${SKOPEO_VERSION} \
+  protobuf-compiler libprotobuf-dev \
+  libsystemd-dev jq && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+  pip install --no-cache-dir \
+  yamllint==${YAMLLINT_VERSION} \
+  yamlfixer-opt-nc==${YAMLFIXER_VERSION}
 
 COPY --from=lychee /usr/bin/lychee /usr/bin/lychee
 COPY --from=golangci /bin/golangci-lint /usr/local/bin
