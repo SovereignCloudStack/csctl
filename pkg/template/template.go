@@ -48,7 +48,7 @@ func visitFile(src, dst, path string, info os.FileInfo, meta *csctlclusterstack.
 
 	destPath := filepath.Join(dst, relativePath)
 	if info.IsDir() {
-		if err := os.MkdirAll(destPath, os.ModePerm); err != nil {
+		if err := os.MkdirAll(destPath, 0o750); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 		return nil
@@ -70,7 +70,7 @@ func visitFile(src, dst, path string, info os.FileInfo, meta *csctlclusterstack.
 		".NodeImageVersion":    meta.Versions.Components.NodeImage,
 	})
 
-	if err := os.WriteFile(destPath, []byte(output), os.ModePerm); err != nil {
+	if err := os.WriteFile(destPath, []byte(output), 0o600); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
