@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstack
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"

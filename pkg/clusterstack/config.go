@@ -18,6 +18,7 @@ limitations under the License.
 package clusterstack
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
