@@ -111,7 +111,7 @@ func (r ReleaseHash) ValidateWithLatestReleaseHash(latestReleaseHash ReleaseHash
 	if r.ClusterAddonDir == latestReleaseHash.ClusterAddonDir &&
 		r.ClusterAddonValues == latestReleaseHash.ClusterAddonValues &&
 		r.NodeImageDir == latestReleaseHash.NodeImageDir {
-		return fmt.Errorf("no change in the cluster stack")
+		return errors.New("no change in the cluster stack")
 	}
 
 	return nil

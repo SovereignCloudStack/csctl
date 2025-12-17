@@ -58,11 +58,11 @@ func GetCsctlConfig(path string) (*CsctlConfig, error) {
 	}
 
 	if cs.Config.Provider.Type == "" {
-		return nil, fmt.Errorf("provider type must not be empty")
+		return nil, errors.New("provider type must not be empty")
 	}
 
 	if len(cs.Config.Provider.Type) > 253 {
-		return nil, fmt.Errorf("provider name must not be greater than 253")
+		return nil, errors.New("provider name must not be greater than 253")
 	}
 
 	match, err := regexp.MatchString(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`, cs.Config.Provider.Type)
@@ -74,7 +74,7 @@ func GetCsctlConfig(path string) (*CsctlConfig, error) {
 	}
 
 	if cs.Config.ClusterStackName == "" {
-		return nil, fmt.Errorf("cluster stack name must not be empty")
+		return nil, errors.New("cluster stack name must not be empty")
 	}
 
 	// Validate kubernetes version
