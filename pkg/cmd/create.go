@@ -19,6 +19,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -185,13 +186,13 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 		}
 	case customMode:
 		if clusterStackVersion == "" {
-			return nil, fmt.Errorf("please specify a semver for custom version with --cluster-stack-version flag")
+			return nil, errors.New("please specify a semver for custom version with --cluster-stack-version flag")
 		}
 		if clusterAddonVersion == "" {
-			return nil, fmt.Errorf("please specify a semver for custom version with --cluster-addon-version flag")
+			return nil, errors.New("please specify a semver for custom version with --cluster-addon-version flag")
 		}
 		if nodeImageVersion == "" {
-			return nil, fmt.Errorf("please specify a semver for custom version with --node-image-version flag")
+			return nil, errors.New("please specify a semver for custom version with --node-image-version flag")
 		}
 
 		createOption.Metadata, err = clusterstack.HandleCustomMode(createOption.Config.Config.KubernetesVersion, clusterStackVersion, clusterAddonVersion, nodeImageVersion)
@@ -222,7 +223,7 @@ func createAction(cmd *cobra.Command, args []string) error {
 	defer cleanTmpDirectory()
 
 	if len(args) != 1 {
-		return fmt.Errorf("please provide a valid command, create only accept one argument to path to the cluster stacks")
+		return errors.New("please provide a valid command, create only accept one argument to path to the cluster stacks")
 	}
 	clusterStackPath := args[0]
 
@@ -253,7 +254,7 @@ func (c *CreateOptions) validateHash() error {
 	if c.CurrentReleaseHash.ClusterAddonDir == c.LatestReleaseHash.ClusterAddonDir &&
 		c.CurrentReleaseHash.ClusterAddonValues == c.LatestReleaseHash.ClusterAddonValues &&
 		c.CurrentReleaseHash.NodeImageDir == c.LatestReleaseHash.NodeImageDir {
-		return fmt.Errorf("no change in the cluster stack")
+		return errors.New("no change in the cluster stack")
 	}
 
 	return nil
@@ -351,7 +352,7 @@ func (c *CreateOptions) generateRelease(ctx context.Context) error {
 
 	if publish {
 		if remote != "oci" {
-			return fmt.Errorf("not pushing assets. --publish is only implemented for remote OCI")
+			return errors.New("not pushing assets. --publish is only implemented for remote OCI")
 		}
 
 		ociClient, err := oci.NewClient()
@@ -410,7 +411,7 @@ func overwriteVersionInFile(chartYaml, newVersion string) error {
 	v := m["version"]
 	oldVersion, ok := v.(string)
 	if !ok {
-		return fmt.Errorf("failed to read version in yaml")
+		return errors.New("failed to read version in yaml")
 	}
 
 	m["version"] = newVersion
