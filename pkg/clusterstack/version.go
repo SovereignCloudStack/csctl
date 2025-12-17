@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstack
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -30,7 +31,7 @@ func BumpVersion(version string) (string, error) {
 
 	// Check if a numeric part was found
 	if len(matches) < 2 {
-		return "", fmt.Errorf("invalid version format")
+		return "", errors.New("invalid version format")
 	}
 
 	// Extract and convert the numeric part to an integer

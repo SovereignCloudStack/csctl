@@ -7,12 +7,12 @@ linters:
     - bodyclose
     - containedctx
     - contextcheck
+    - copyloopvar
     - durationcheck
     - errchkjson
     - errname
     - errorlint
     - exhaustive
-    - exportloopref
     - forcetypeassert
     - gci
     - gocritic
