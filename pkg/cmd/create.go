@@ -28,7 +28,7 @@ import (
 	"github.com/SovereignCloudStack/csctl/pkg/assetsclient/github"
 	"github.com/SovereignCloudStack/csctl/pkg/assetsclient/oci"
 	"github.com/SovereignCloudStack/csctl/pkg/clusterstack"
-	"github.com/SovereignCloudStack/csctl/pkg/hash"
+	"github.com/SovereignCloudStack/csctl/pkg/cshash"
 	"github.com/SovereignCloudStack/csctl/pkg/providerplugin"
 	"github.com/SovereignCloudStack/csctl/pkg/template"
 	"github.com/spf13/cobra"
@@ -73,8 +73,8 @@ type CreateOptions struct {
 	ClusterStackReleaseDir    string
 	Config                    *clusterstack.CsctlConfig
 	Metadata                  *clusterstack.MetaData
-	CurrentReleaseHash        hash.ReleaseHash
-	LatestReleaseHash         hash.ReleaseHash
+	CurrentReleaseHash        cshash.ReleaseHash
+	LatestReleaseHash         cshash.ReleaseHash
 	NodeImageRegistry         string
 	releaseName               string
 }
@@ -127,7 +127,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 		return createOption, fmt.Errorf("providerplugin.GetProviderExecutable(&config) failed: %w", err)
 	}
 
-	currentHash, err := hash.GetHash(clusterStackPath)
+	currentHash, err := cshash.GetHash(clusterStackPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get hash: %w", err)
 	}
@@ -171,7 +171,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 				return nil, fmt.Errorf("failed to download release asset: %w", err)
 			}
 
-			createOption.LatestReleaseHash, err = hash.ParseReleaseHash("./.tmp/release/hashes.json")
+			createOption.LatestReleaseHash, err = cshash.ParseReleaseHash("./.tmp/release/hashes.json")
 			if err != nil {
 				return nil, fmt.Errorf("failed to read hash from the github: %w", err)
 			}

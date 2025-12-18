@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package hash contains important functions of hash.
-package hash
+package cshash
 
 import (
 	"crypto/sha256"
