@@ -147,6 +147,8 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			remoteFactory = github.NewFactory()
 		case "oci":
 			remoteFactory = oci.NewFactory()
+		default:
+			return nil, errors.New("please provide a valied remote repo")
 		}
 
 		ac, err := remoteFactory.NewClient(ctx)
@@ -199,6 +201,8 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 		if err != nil {
 			return nil, fmt.Errorf("failed to handle custom mode: %w", err)
 		}
+	default:
+		return nil, errors.New("please use a valid mode")
 	}
 
 	releaseDirName, err := clusterstack.GetClusterStackReleaseDirectoryName(createOption.Metadata, createOption.Config)
