@@ -69,5 +69,5 @@ func main() {
 	fmt.Printf("releaseDir: %s\n", releaseDir)
 	fmt.Printf("nodeImageRegistry: %s\n", nodeImageRegistry)
 	fmt.Printf("..... pretending to read config: %s\n", config.Config.Provider.Config["dummyKey"])
-	fmt.Printf("..... pretending to do heavy work (creating node images) ...\n")
+	fmt.Print("..... pretending to do heavy work (creating node images) ...\n")
 }
