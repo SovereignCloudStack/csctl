@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package hash contains important functions of hash.
+// Package cshash contains important functions of hash.
 package cshash
 
 import (
@@ -92,6 +92,9 @@ func GetHash(path string) (ReleaseHash, error) {
 				releaseHash.ClusterAddonDir = hash
 			case nodeImageDirName:
 				releaseHash.NodeImageDir = hash
+			default:
+				// Should not happen
+				return ReleaseHash{}, fmt.Errorf("unknown name type %s", entryPath)
 			}
 		} else if !entry.IsDir() && entry.Name() == clusterAddonValuesFileName {
 			file, _ := os.Open(filepath.Clean(entryPath))
