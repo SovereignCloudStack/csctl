@@ -20,11 +20,11 @@ import (
 	"fmt"
 
 	"github.com/SovereignCloudStack/cluster-stack-operator/pkg/version"
-	"github.com/SovereignCloudStack/csctl/pkg/hash"
+	"github.com/SovereignCloudStack/csctl/pkg/cshash"
 )
 
 // HandleStableMode returns metadata for the stable mode.
-func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleaseHash hash.ReleaseHash) (*MetaData, error) {
+func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleaseHash cshash.ReleaseHash) (*MetaData, error) {
 	metadata, err := ParseMetaData(gitHubReleasePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse metadata: %w", err)
@@ -63,7 +63,7 @@ func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleas
 }
 
 // HandleHashMode handles the hash mode with the cluster stack hash.
-func HandleHashMode(currentRelease hash.ReleaseHash, kubernetesVersion string) *MetaData {
+func HandleHashMode(currentRelease cshash.ReleaseHash, kubernetesVersion string) *MetaData {
 	clusterStackHash := currentRelease.GetClusterStackHash()
 	clusterStackHash = fmt.Sprintf("v0-sha.%s", clusterStackHash)
 

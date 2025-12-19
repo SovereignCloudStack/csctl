@@ -84,7 +84,7 @@ ifeq ($(BUILD_IN_CONTAINER),true)
 else
 	go version
 	golangci-lint version
-	golangci-lint run -v --out-format=github-actions
+	golangci-lint run -v # --out-format=github-actions
 endif
 
 .PHONY: lint-yaml
