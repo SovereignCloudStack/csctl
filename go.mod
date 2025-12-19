@@ -1,21 +1,21 @@
 module github.com/SovereignCloudStack/csctl
 
-go 1.22.0
+go 1.24.0
 
-toolchain go1.22.12
+toolchain go1.25.5
 
 require (
 	github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.9
 	github.com/google/go-github/v56 v56.0.0
 	github.com/opencontainers/image-spec v1.1.1
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.10.2
 	github.com/valyala/fasttemplate v1.2.2
-	golang.org/x/mod v0.22.0
-	golang.org/x/oauth2 v0.25.0
+	golang.org/x/mod v0.31.0
+	golang.org/x/oauth2 v0.24.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.16.4
-	oras.land/oras-go/v2 v2.5.0
+	helm.sh/helm/v3 v3.16.3
+	oras.land/oras-go/v2 v2.6.0
 )
 
 require (
@@ -118,7 +118,7 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
@@ -134,7 +134,7 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
