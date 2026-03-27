@@ -14,7 +14,7 @@ require (
 	golang.org/x/oauth2 v0.25.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.16.4
+	helm.sh/helm/v4 v4.1.3
 	oras.land/oras-go/v2 v2.5.0
 )
 
