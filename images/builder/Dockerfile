@@ -30,11 +30,12 @@ RUN apk add --no-cache curl && \
 # Install Golang CI Lint
 FROM docker.io/library/alpine:3.23.4@sha256:4d889c14e7d5a73929ab00be2ef8ff22437e7cbc545931e52554a7b00e123d8b as golangci
 # update: datasource=github-tags depName=golangci/golangci-lint versioning=semver
-ENV GOLANGCI_VERSION="v2.9.0"
+ENV GOLANGCI_VERSION="v2.12.2"
 WORKDIR /
 # hadolint ignore=DL3018,DL4006
 RUN apk add --no-cache curl && \
-  curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_VERSION}
+  curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh | \
+  sh -s ${GOLANGCI_VERSION}
 
 # Install Hadolint
 FROM docker.io/hadolint/hadolint:v2.14.0-alpine@sha256:7aba693c1442eb31c0b015c129697cb3b6cb7da589d85c7562f9deb435a6657c as hadolint
