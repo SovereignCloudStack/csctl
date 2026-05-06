@@ -17,20 +17,20 @@
 # If you make changes to this Dockerfile run `make builder-image-push`.
 
 # Install Lychee
-FROM docker.io/library/alpine:3.23.0@sha256:51183f2cfa6320055da30872f211093f9ff1d3cf06f39a0bdb212314c5dc7375 as lychee
+FROM docker.io/library/alpine:3.23.4@sha256:4d889c14e7d5a73929ab00be2ef8ff22437e7cbc545931e52554a7b00e123d8b as lychee
 # update: datasource=github-tags depName=lycheeverse/lychee versioning=semver
-ENV LYCHEE_VERSION="v0.15.1"
+ENV LYCHEE_VERSION="v0.24.2"
 # hadolint ignore=DL3018
 RUN apk add --no-cache curl && \
-  curl -L -o /tmp/lychee-${LYCHEE_VERSION}.tgz https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz && \
+  curl -L -o /tmp/lychee-${LYCHEE_VERSION}.tgz https://github.com/lycheeverse/lychee/releases/download/lychee-${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz && \
   tar -xz -C /tmp -f /tmp/lychee-${LYCHEE_VERSION}.tgz && \
-  mv /tmp/lychee /usr/bin/lychee && \
+  mv /tmp/lychee-x86_64-unknown-linux-gnu/lychee /usr/bin/lychee && \
   rm -rf /tmp/linux-amd64 /tmp/lychee-${LYCHEE_VERSION}.tgz
 
 # Install Golang CI Lint
-FROM docker.io/library/alpine:3.23.0@sha256:51183f2cfa6320055da30872f211093f9ff1d3cf06f39a0bdb212314c5dc7375 as golangci
+FROM docker.io/library/alpine:3.23.4@sha256:4d889c14e7d5a73929ab00be2ef8ff22437e7cbc545931e52554a7b00e123d8b as golangci
 # update: datasource=github-tags depName=golangci/golangci-lint versioning=semver
-ENV GOLANGCI_VERSION="v2.7.2"
+ENV GOLANGCI_VERSION="v2.9.0"
 WORKDIR /
 # hadolint ignore=DL3018,DL4006
 RUN apk add --no-cache curl && \
@@ -40,17 +40,17 @@ RUN apk add --no-cache curl && \
 FROM docker.io/hadolint/hadolint:v2.14.0-alpine@sha256:7aba693c1442eb31c0b015c129697cb3b6cb7da589d85c7562f9deb435a6657c as hadolint
 
 # Install Trivy
-FROM docker.io/aquasec/trivy:0.68.2@sha256:05d0126976bdedcd0782a0336f77832dbea1c81b9cc5e4b3a5ea5d2ec863aca7 as trivy
+FROM docker.io/aquasec/trivy:0.70.0@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e as trivy
 
 ############################
 # csctl Build Image Base #
 ############################
-FROM docker.io/library/golang:1.22-bullseye
+FROM docker.io/library/golang:1.25-bookworm
 
 # update: datasource=repology depName=debian_11/skopeo versioning=loose
-ENV SKOPEO_VERSION="1.2.2+dfsg1-1+b6"
+ENV SKOPEO_VERSION="1.9.3+ds1-1+b10"
 # update: datasource=github-tags depName=adrienverge/yamllint versioning=semver
-ENV YAMLLINT_VERSION="v1.37.1"
+ENV YAMLLINT_VERSION="v1.38.0"
 # update: datasource=github-tags depName=opt-nc/yamlfixer versioning=semver
 ENV YAMLFIXER_VERSION="0.9.15"
 
@@ -63,7 +63,7 @@ RUN apt-get update && \
   protobuf-compiler libprotobuf-dev \
   libsystemd-dev jq && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-  pip install --no-cache-dir \
+  pip install --break-system-packages --no-cache-dir \
   yamllint==${YAMLLINT_VERSION} \
   yamlfixer-opt-nc==${YAMLFIXER_VERSION}
 
