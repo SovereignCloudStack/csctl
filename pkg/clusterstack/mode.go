@@ -35,7 +35,9 @@ func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleas
 		return nil, fmt.Errorf("failed to bump cluster stack: %w", err)
 	}
 
-	if currentReleaseHash.ClusterAddonDir != latestReleaseHash.ClusterAddonDir || currentReleaseHash.ClusterAddonValues != latestReleaseHash.ClusterAddonValues {
+	if currentReleaseHash.ClusterAddonDir    != latestReleaseHash.ClusterAddonDir    ||
+	   currentReleaseHash.ClusterAddonValues != latestReleaseHash.ClusterAddonValues ||
+	   currentReleaseHash.ClusterClassDir    != latestReleaseHash.ClusterClassDir     {
 		metadata.Versions.Components.ClusterAddon, err = BumpVersion(metadata.Versions.Components.ClusterAddon)
 		if err != nil {
 			return nil, fmt.Errorf("failed to bump cluster addon: %w", err)
@@ -58,6 +60,22 @@ func HandleStableMode(gitHubReleasePath string, currentReleaseHash, latestReleas
 			fmt.Printf("NodeImage Version unchanged: %s\n", metadata.Versions.Components.NodeImage)
 		}
 	}
+	if currentReleaseHash.ClusterClassDir != latestReleaseHash.ClusterClassDir {
+		metadata.Versions.Components.ClusterClass, err = BumpVersion(metadata.Versions.Components.ClusterClass)
+		if err != nil {
+			metadata.Versions.Components.ClusterClass = "v1"
+			fmt.Printf("Initial ClusterClass Version: %s\n", metadata.Versions.Components.ClusterClass)
+			//return nil, fmt.Errorf("failed to bump cluster class: %w", err)
+		} else {
+			fmt.Printf("Bumped ClusterClass Version: %s\n", metadata.Versions.Components.ClusterClass)
+		}
+	} else {
+		if metadata.Versions.Components.ClusterClass == "" {
+			fmt.Println("No ClusterClass Version.")
+		} else {
+			fmt.Printf("ClusterClass Version unchanged: %s\n", metadata.Versions.Components.ClusterClass)
+		}
+	}
 
 	return metadata, nil
 }
@@ -75,18 +93,23 @@ func HandleHashMode(currentRelease cshash.ReleaseHash, kubernetesVersion string)
 			Components: Component{
 				ClusterAddon: clusterStackHash,
 				NodeImage:    clusterStackHash,
+				ClusterClass: clusterStackHash,
 			},
 		},
 	}
 }
 
 // HandleCustomMode handles custom mode with version for all components.
-func HandleCustomMode(kubernetesVersion, clusterStackVersion, clusterAddonVersion, nodeImageVersion string) (*MetaData, error) {
+func HandleCustomMode(kubernetesVersion, clusterStackVersion, clusterAddonVersion, 
+		      clusterClassVersion, nodeImageVersion string) (*MetaData, error) {
 	if _, err := version.New(clusterStackVersion); err != nil {
 		return nil, fmt.Errorf("failed to verify custom version for cluster stack: %q: %w", clusterStackVersion, err)
 	}
 	if _, err := version.New(clusterAddonVersion); err != nil {
 		return nil, fmt.Errorf("failed to verify custom version for cluster addon: %q: %w", clusterAddonVersion, err)
+	}
+	if _, err := version.New(clusterClassVersion); err != nil {
+		return nil, fmt.Errorf("failed to verify custom version for cluster class: %q: %w", clusterClassVersion, err)
 	}
 	if _, err := version.New(nodeImageVersion); err != nil {
 		return nil, fmt.Errorf("failed to verify custom version for node image: %q: %w", nodeImageVersion, err)
@@ -99,6 +122,7 @@ func HandleCustomMode(kubernetesVersion, clusterStackVersion, clusterAddonVersio
 			ClusterStack: clusterStackVersion,
 			Components: Component{
 				ClusterAddon: clusterAddonVersion,
+				ClusterClass: clusterClassVersion,
 				NodeImage:    nodeImageVersion,
 			},
 		},

@@ -61,6 +61,7 @@ var (
 	nodeImageRegistry   string
 	clusterStackVersion string
 	clusterAddonVersion string
+	clusterClassVersion string
 	nodeImageVersion    string
 	remote              string
 	publish             bool
@@ -95,6 +96,7 @@ func init() {
 	createCmd.Flags().StringVarP(&nodeImageRegistry, "node-image-registry", "r", "", "It defines the node image registry. For example oci://ghcr.io/foo/bar/node-images/staging/")
 	createCmd.Flags().StringVar(&clusterStackVersion, "cluster-stack-version", "", "It is used to specify the semver version for the cluster stack in the custom mode")
 	createCmd.Flags().StringVar(&clusterAddonVersion, "cluster-addon-version", "", "It is used to specify the semver version for the cluster addon in the custom mode")
+	createCmd.Flags().StringVar(&clusterClassVersion, "cluster-class-version", "", "It is used to specify the semver version for the cluster class in the custom mode")
 	createCmd.Flags().StringVar(&nodeImageVersion, "node-image-version", "", "It is used to specify the semver version for the node images in the custom mode")
 	createCmd.Flags().StringVar(&remote, "remote", "github", "Which remote repository to use and thus which credentials are required. Currently supported are 'github' and 'oci'.")
 	createCmd.Flags().BoolVar(&publish, "publish", false, "Publish release after creation is done. This is only implemented for OCI currently.")
@@ -168,6 +170,7 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 			createOption.Metadata.Versions.ClusterStack = "v1"
 			createOption.Metadata.Versions.Components.ClusterAddon = "v1"
 			createOption.Metadata.Versions.Components.NodeImage = "v1"
+			createOption.Metadata.Versions.Components.ClusterClass = "v1"
 		} else {
 			if err := downloadReleaseAssets(ctx, latestRepoRelease, "./.tmp/release/", ac); err != nil {
 				return nil, fmt.Errorf("failed to download release asset: %w", err)
@@ -196,8 +199,12 @@ func GetCreateOptions(ctx context.Context, clusterStackPath string) (*CreateOpti
 		if nodeImageVersion == "" {
 			return nil, errors.New("please specify a semver for custom version with --node-image-version flag")
 		}
+		if clusterClassVersion == "" {
+			return nil, errors.New("please specify a semver for custom version with --cluster-class-version flag")
+		}
 
-		createOption.Metadata, err = clusterstack.HandleCustomMode(createOption.Config.Config.KubernetesVersion, clusterStackVersion, clusterAddonVersion, nodeImageVersion)
+		createOption.Metadata, err = clusterstack.HandleCustomMode(createOption.Config.Config.KubernetesVersion,
+			clusterStackVersion, clusterAddonVersion, clusterClassVersion, nodeImageVersion)
 		if err != nil {
 			return nil, fmt.Errorf("failed to handle custom mode: %w", err)
 		}
@@ -257,6 +264,7 @@ func createAction(cmd *cobra.Command, args []string) error {
 func (c *CreateOptions) validateHash() error {
 	if c.CurrentReleaseHash.ClusterAddonDir == c.LatestReleaseHash.ClusterAddonDir &&
 		c.CurrentReleaseHash.ClusterAddonValues == c.LatestReleaseHash.ClusterAddonValues &&
+		c.CurrentReleaseHash.ClusterClassDir == c.LatestReleaseHash.ClusterClassDir &&
 		c.CurrentReleaseHash.NodeImageDir == c.LatestReleaseHash.NodeImageDir {
 		return errors.New("no change in the cluster stack")
 	}
