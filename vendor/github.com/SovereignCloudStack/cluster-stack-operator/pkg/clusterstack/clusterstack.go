@@ -59,13 +59,24 @@ var (
 // e.g. - "docker-ferrol-1-27-v1", "docker-ferrol-1-27-v1-alpha.1", etc.
 func NewFromClusterClassProperties(str string) (ClusterStack, error) {
 	splitted := strings.Split(str, Separator)
-	if len(splitted) != 5 && len(splitted) != 6 {
+	splen := len(splitted)
+	// search for rightmost -vX
+	offset := 0
+	for ((4+offset < splen) && (splitted[4+offset][0] != 'v')) {
+		offset += 1
+	}
+	if ((splen < 5+offset) || (4+offset == splen) || (splitted[4+offset][0] != 'v') || (splen > 6+offset)) {
 		return ClusterStack{}, ErrInvalidFormat
 	}
-
+	var name string
+	if offset != 0 {
+		name = strings.Join(splitted[1:2+offset], Separator)
+	} else {
+		name = splitted[1]
+	}
 	clusterStack := ClusterStack{
 		Provider: splitted[0],
-		Name:     splitted[1],
+		Name:     name,
 	}
 
 	if clusterStack.Provider == "" {
@@ -78,18 +89,22 @@ func NewFromClusterClassProperties(str string) (ClusterStack, error) {
 
 	var err error
 
-	clusterStack.KubernetesVersion, err = kubernetesversion.New(splitted[2], splitted[3])
+	clusterStack.KubernetesVersion, err = kubernetesversion.New(splitted[2+offset], splitted[3+offset])
 	if err != nil {
-		return ClusterStack{}, fmt.Errorf("failed to create Kubernetes version from %s-%s: %w", splitted[2], splitted[3], err)
+		return ClusterStack{}, fmt.Errorf("failed to create Kubernetes version from %s-%s: %w",
+			splitted[2+offset], splitted[3+offset], err)
 	}
 
 	var versionString string
-	if len(splitted) == 5 {
+	if splen-offset == 5 {
 		// e.g. myprovider-myclusterstack-1-26-v1
-		versionString = splitted[4]
-	} else if len(splitted) == 6 {
+		versionString = splitted[4+offset]
+	} else if splen-offset == 6 {
 		// e.g. myprovider-myclusterstack-1-26-v1-alpha.0
-		versionString = strings.Join(splitted[4:6], Separator)
+		versionString = strings.Join(splitted[4+offset:6+offset], Separator)
+	} else {
+		// this should be impossible
+		panic("The impossible error")
 	}
 
 	// version string like v1-alpha.0
@@ -107,37 +122,44 @@ func NewFromClusterClassProperties(str string) (ClusterStack, error) {
 // e.g. - "docker-ferrol-1-27-v1", "docker-ferrol-1-27-v1-alpha-1", etc.
 func NewFromClusterStackReleaseProperties(str string) (ClusterStack, error) {
 	splitted := strings.Split(str, Separator)
-	if len(splitted) != 5 && len(splitted) != 7 {
+	splen := len(splitted)
+	// search for rightmost -vX
+	offset := 0
+	for ((4+offset < splen) && (splitted[4+offset][0] != 'v')) {
+		offset += 1
+	}
+	if ((splen < 5+offset) || (4+offset == splen) || (splitted[4+offset][0] != 'v') || (splen > 7+offset)) {
 		return ClusterStack{}, ErrInvalidFormat
 	}
-
+	var name string
+	if offset != 0 {
+		name = strings.Join(splitted[1:2+offset], Separator)
+		} else {
+		name = splitted[1]
+	}
 	clusterStack := ClusterStack{
 		Provider: splitted[0],
-		Name:     splitted[1],
-	}
-
-	if clusterStack.Provider == "" {
-		return ClusterStack{}, ErrInvalidProvider
-	}
-
-	if clusterStack.Name == "" {
-		return ClusterStack{}, ErrInvalidName
+		Name:     name,
 	}
 
 	var err error
 
-	clusterStack.KubernetesVersion, err = kubernetesversion.New(splitted[2], splitted[3])
+	clusterStack.KubernetesVersion, err = kubernetesversion.New(splitted[2+offset], splitted[3+offset])
 	if err != nil {
-		return ClusterStack{}, fmt.Errorf("failed to create Kubernetes version from %s-%s: %w", splitted[2], splitted[3], err)
+		return ClusterStack{}, fmt.Errorf("failed to create Kubernetes version from %s-%s: %w",
+			splitted[2+offset], splitted[3+offset], err)
 	}
 
 	var versionString string
-	if len(splitted) == 5 {
+	if splen-offset == 5 {
 		// e.g. myprovider-myclusterstack-1-26-v1
-		versionString = splitted[4]
-	} else if len(splitted) == 7 {
+		versionString = splitted[4+offset]
+	} else if splen-offset  == 6 {
+		// e.g. myprovider-myclusterstack-1-26-v1-alpha
+		versionString = strings.Join(splitted[4+offset:6+offset], Separator)
+	} else if splen-offset  == 7 {
 		// e.g. myprovider-myclusterstack-1-26-v1-alpha-0
-		versionString = strings.Join(splitted[4:7], Separator)
+		versionString = strings.Join(splitted[4+offset:7+offset], Separator)
 	}
 
 	// version string like v1-alpha-0

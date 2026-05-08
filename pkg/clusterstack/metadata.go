@@ -28,6 +28,7 @@ import (
 type Component struct {
 	ClusterAddon string `yaml:"clusterAddon"`
 	NodeImage    string `yaml:"nodeImage,omitempty"`
+	ClusterClass string `yaml:"clusterClass"`
 }
 
 // Versions contains version information.

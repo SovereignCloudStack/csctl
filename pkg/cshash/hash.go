@@ -35,6 +35,7 @@ const (
 	clusterAddonDirName        = "cluster-addon"
 	nodeImageDirName           = "node-image"
 	clusterAddonValuesFileName = "cluster-addon-values.yaml"
+	clusterClassDirName        = "cluster-class"
 )
 
 // ReleaseHash contains the information of release hash.
@@ -42,6 +43,7 @@ type ReleaseHash struct {
 	ClusterStack       string `json:"clusterStack"`
 	ClusterAddonDir    string `json:"clusterAddonDir"`
 	ClusterAddonValues string `json:"clusterAddonValues"`
+	ClusterClassDir    string `json:"clusterClassDir"`
 	NodeImageDir       string `json:"nodeImageDir,omitempty"`
 }
 
@@ -80,7 +82,9 @@ func GetHash(path string) (ReleaseHash, error) {
 
 	for _, entry := range entries {
 		entryPath := filepath.Join(path, entry.Name())
-		if entry.IsDir() && (entry.Name() == clusterAddonDirName || entry.Name() == nodeImageDirName) {
+		if entry.IsDir() && (entry.Name() == clusterAddonDirName ||
+				entry.Name() == nodeImageDirName ||
+				entry.Name() == clusterClassDirName) {
 			hash, err := dirhash.HashDir(entryPath, "", dirhash.DefaultHash)
 			if err != nil {
 				return ReleaseHash{}, fmt.Errorf("failed to hash dir: %w", err)
@@ -92,6 +96,8 @@ func GetHash(path string) (ReleaseHash, error) {
 				releaseHash.ClusterAddonDir = hash
 			case nodeImageDirName:
 				releaseHash.NodeImageDir = hash
+			case clusterClassDirName:
+				releaseHash.ClusterClassDir = hash
 			default:
 				// Should not happen
 				return ReleaseHash{}, fmt.Errorf("unknown name type %s", entryPath)
@@ -114,6 +120,7 @@ func GetHash(path string) (ReleaseHash, error) {
 func (r ReleaseHash) ValidateWithLatestReleaseHash(latestReleaseHash ReleaseHash) error {
 	if r.ClusterAddonDir == latestReleaseHash.ClusterAddonDir &&
 		r.ClusterAddonValues == latestReleaseHash.ClusterAddonValues &&
+		r.ClusterClassDir == latestReleaseHash.ClusterClassDir &&
 		r.NodeImageDir == latestReleaseHash.NodeImageDir {
 		return errors.New("no change in the cluster stack")
 	}
