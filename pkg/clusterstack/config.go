@@ -79,7 +79,7 @@ func GetCsctlConfig(path string) (*CsctlConfig, error) {
 	}
 
 	// Validate kubernetes version
-	matched, err := regexp.MatchString(`^v\d+\.\d+\.\d+$`, cs.Config.KubernetesVersion)
+	matched, err := regexp.MatchString(`^v\d+\.\d+\.\d+$|^v\d+\.\d+\.\d+\+rke2r\d+$`, cs.Config.KubernetesVersion)
 	if err != nil {
 		return nil, fmt.Errorf("failed to kubernetes match regex: %w", err)
 	}
