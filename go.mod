@@ -1,8 +1,6 @@
 module github.com/SovereignCloudStack/csctl
 
-go 1.22.0
-
-toolchain go1.22.12
+go 1.25.0
 
 require (
 	github.com/SovereignCloudStack/cluster-stack-operator v0.1.0-alpha.9
@@ -15,7 +13,7 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.16.4
-	oras.land/oras-go/v2 v2.5.0
+	oras.land/oras-go/v2 v2.6.2
 )
 
 require (
@@ -134,7 +132,7 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
